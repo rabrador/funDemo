@@ -20,6 +20,16 @@ public class MainActivity extends AppCompatActivity {
 
         initView();
 
+        /* Navigation */
+        btnT1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intMap = new Intent();
+                intMap.setClass(MainActivity.this, MapsActivity.class);
+                startActivity(intMap);
+            }
+        });
+
         /* List View */
         btnT2.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -29,8 +39,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intList);
             }
         });
-
-
 
     }
 
