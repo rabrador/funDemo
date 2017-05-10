@@ -1,7 +1,11 @@
 package com.example.vincent.functiondemo;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -38,6 +42,26 @@ public class ListActivity extends AppCompatActivity {
         }
 
         mList.setAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, namesArr));
+
+        mList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                /* Show introduction */
+                new AlertDialog.Builder(ListActivity.this)
+                        .setTitle("介紹")
+                        .setMessage(dbTouris.get(position).getIntroduction())
+                        .setPositiveButton("確定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        })
+                        .show();
+
+                //Toast.makeText(getApplicationContext(), dbTouris.get(position).getIntroduction(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     public InputStream loadRawFile() {
