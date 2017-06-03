@@ -1,9 +1,11 @@
 package com.example.vincent.functiondemo;
 
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -67,16 +69,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 //        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
         mMap.getUiSettings().setZoomControlsEnabled(true); // Google Map Zoom
-        buttonMyLocationEvent(); // My Location Button
+//        buttonMyLocationEvent(); // My Location Button
 
         /* Check Permission, if needed */
-//        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-//                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
-//        }
-//        else {
-//            buttonMyLocationEvent();
-//        }
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+        } else {
+            buttonMyLocationEvent();
+        }
     }
 
     @Override
@@ -126,17 +127,17 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     }
 
     /* Get Permission answer, if needed */
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//
-//        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//            buttonMyLocationEvent();
-//        }
-//        else {
-//            //user do reject
-//        }
-//    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            buttonMyLocationEvent();
+
+        } else {
+            //user do reject
+        }
+    }
 
     private void buttonMyLocationEvent() {
         mMap.setMyLocationEnabled(true);
