@@ -1,4 +1,4 @@
-package com.example.vincent.functiondemo;
+package com.justdemo.vincent.functiondemo;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;

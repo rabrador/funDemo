@@ -1,4 +1,4 @@
-package com.example.vincent.functiondemo;
+package com.justdemo.vincent.functiondemo;
 
 /**
  * Created by Vincent on 2017/5/4.

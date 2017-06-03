@@ -1,4 +1,4 @@
-package com.example.vincent.functiondemo;
+package com.justdemo.vincent.functiondemo;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
