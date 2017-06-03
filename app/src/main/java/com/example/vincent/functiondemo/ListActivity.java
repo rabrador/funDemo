@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -28,6 +29,9 @@ public class ListActivity extends AppCompatActivity {
 
         initView();
 
+        //Image List
+        final LayoutInflater image_layout = LayoutInflater.from(this);
+
         // Load Raw file and covert to String
         covRawToString(loadRawFile());
 
@@ -46,15 +50,17 @@ public class ListActivity extends AppCompatActivity {
         mList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                View view_layout = image_layout.inflate(R.layout.image_list, null);
 
                 /* Show introduction */
                 new AlertDialog.Builder(ListActivity.this)
+                        .setView(view_layout)
                         .setTitle("介紹")
                         .setMessage(dbTouris.get(position).getIntroduction())
                         .setPositiveButton("確定", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-
+                                dialog.dismiss();
                             }
                         })
                         .show();

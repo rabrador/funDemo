@@ -40,6 +40,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        /* Login in */
+        btnT3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intLogin = new Intent();
+                intLogin.setClass(MainActivity.this, LoginActivity.class);
+                startActivity(intLogin);
+            }
+        });
     }
 
     private void initView() {
