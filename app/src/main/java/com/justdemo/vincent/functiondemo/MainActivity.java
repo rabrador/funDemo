@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         initView();
 
         /* Connect to EDU */
-        new connectEDU().execute("http://140.115.197.16/?school=nptu&app=pingtungtravel&year=106");
+        //new connectEDU().execute("http://140.115.197.16/?school=nptu&app=pingtungtravel&year=106");
 
         /* Navigation */
         btnT1.setOnClickListener(new View.OnClickListener() {
@@ -55,6 +55,16 @@ public class MainActivity extends AppCompatActivity {
                 Intent intLogin = new Intent();
                 intLogin.setClass(MainActivity.this, LoginActivity.class);
                 startActivity(intLogin);
+            }
+        });
+
+        /* Camera */
+        btnT4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intCam = new Intent();
+                intCam.setClass(MainActivity.this, CamActivity.class);
+                startActivity(intCam);
             }
         });
     }
@@ -94,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
             //Toast.makeText(MainActivity.this, "Done", Toast.LENGTH_LONG).show();
             super.onPostExecute(s);
         }
-        //String url = "http://140.115.197.16/?school=nptu&app=pingtungtravel&year=106";
 
     }
 }
