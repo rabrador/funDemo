@@ -1,8 +1,16 @@
 package com.justdemo.vincent.functiondemo;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.SurfaceTexture;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
@@ -20,6 +28,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import java.util.Arrays;
@@ -32,6 +42,8 @@ public class CamActivity extends AppCompatActivity {
     private CameraDevice camDevice = null;
     private CaptureRequest.Builder capBuilder = null;
     private CameraCaptureSession cameraSeeion = null;
+    private FrameLayout frameAR;
+    private String accelData = "Accelerometer Data";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +53,8 @@ public class CamActivity extends AppCompatActivity {
         initView();
         cameraText.setSurfaceTextureListener(mSurfaceTextureListener);
 
+        OverlayView arContent = new OverlayView(getApplicationContext());
+        frameAR.addView(arContent);
     }
 
     @Override
@@ -57,6 +71,7 @@ public class CamActivity extends AppCompatActivity {
 
     private void initView() {
         cameraText = (TextureView) findViewById(R.id.textureView);
+        frameAR = (FrameLayout) findViewById(R.id.framelayout);
     }
 
     /* invoke onSurfaceTextureAvailable when TextureView is activity */
@@ -182,6 +197,60 @@ public class CamActivity extends AppCompatActivity {
         if (cameraSeeion != null) {
             cameraSeeion.close();
             cameraSeeion = null;
+        }
+    }
+
+    public class OverlayView extends View implements SensorEventListener {
+        public OverlayView(Context context) {
+            super(context);
+
+            SensorManager sensors = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+            Sensor accelSensor = sensors.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            Sensor compassSensor = sensors.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+            Sensor gyroSensor = sensors.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+
+            boolean isAccelAvailable = sensors.registerListener(this, accelSensor, SensorManager.SENSOR_DELAY_NORMAL);
+            boolean isCompassAvailable = sensors.registerListener(this, compassSensor, SensorManager.SENSOR_DELAY_NORMAL);
+            boolean isGyroAvailable = sensors.registerListener(this, gyroSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+
+            Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            contentPaint.setTextAlign(Paint.Align.CENTER);
+            contentPaint.setTextSize(40);
+            contentPaint.setColor(Color.RED);
+            canvas.drawText(accelData, canvas.getWidth() / 2, canvas.getHeight() / 4, contentPaint);
+
+        }
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            StringBuilder msg = new StringBuilder(event.sensor.getName()).append(" ");
+            for (float value : event.values) {
+                msg.append("[").append(value).append("]");
+            }
+
+            switch (event.sensor.getType()) {
+                case Sensor.TYPE_ACCELEROMETER:
+                    accelData = msg.toString();
+                    break;
+//                case Sensor.TYPE_GYROSCOPE:
+//                    gyroData = msg.toString();
+//                    break;
+//                case Sensor.TYPE_MAGNETIC_FIELD:
+//                    compassData = msg.toString();
+//                    break;
+            }
+
+            this.invalidate();
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
         }
     }
 }
