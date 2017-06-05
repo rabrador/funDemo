@@ -9,11 +9,15 @@ public class Touris {
     String Name;
     String Title;
     String Introduction;
+    String Longitude;
+    String Latitude;
 
-    public Touris(String name, String title, String introduction) {
+    public Touris(String name, String title, String introduction, String longitude, String latitude) {
         Name = name;
         Title = title;
         Introduction = introduction;
+        Longitude = longitude;
+        Latitude = latitude;
     }
 
     public String getData() {
@@ -42,6 +46,22 @@ public class Touris {
 
     public String getIntroduction() {
         return Introduction;
+    }
+
+    public String getLongitude() {
+        return Longitude;
+    }
+
+    public void setLongitude(String longitude) {
+        Longitude = longitude;
+    }
+
+    public String getLatitude() {
+        return Latitude;
+    }
+
+    public void setLatitude(String latitude) {
+        Latitude = latitude;
     }
 
     public void setIntroduction(String introduction) {

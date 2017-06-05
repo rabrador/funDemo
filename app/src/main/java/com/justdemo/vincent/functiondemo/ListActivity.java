@@ -99,7 +99,8 @@ public class ListActivity extends AppCompatActivity {
             for (int i = 0; i < array.length(); i++) {
                 JSONObject subObj = array.getJSONObject(i);
 
-                Touris touris = new Touris(subObj.getString("Name"), subObj.getString("Title"), subObj.getString("Introduction"));
+                Touris touris = new Touris(subObj.getString("Name"), subObj.getString("Title"), subObj.getString("Introduction"),
+                        subObj.getString("Nlat"), subObj.getString("Elong"));
                 dbTouris.add(touris);
             }
         } catch (Exception e) {
