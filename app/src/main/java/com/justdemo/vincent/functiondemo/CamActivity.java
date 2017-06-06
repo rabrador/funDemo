@@ -64,6 +64,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private FrameLayout frameAR;
     private String accelData = "Accelerometer Data";
     private String compassData = "Compass Data";
+    private String gyroData = "";
     private double x, y = 0;
     private int w, h = 0;
     private Rect areaRect;
@@ -72,6 +73,9 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private String[] LongitudeArr;
     private String[] LatitudeArr;
     private String[] namesArr;
+    private double xCoordinate[];
+    private double yCoordinate[];
+    private Location myLocat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,9 +102,9 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
         } else {
             String provider = this.locationMgr.getBestProvider(new Criteria(), true);
-            Location location = locationMgr.getLastKnownLocation(provider);
+            myLocat = locationMgr.getLastKnownLocation(provider);
             //Toast.makeText(CamActivity.this, String.valueOf(location.getLatitude()) + ", "+ String.valueOf(location.getLongitude()), Toast.LENGTH_LONG).show();
-            Log.d("GPS", String.valueOf(location.getLatitude()) + ", " + String.valueOf(location.getLongitude()));
+            Log.d("GPS", String.valueOf(myLocat.getLatitude()) + ", " + String.valueOf(myLocat.getLongitude()));
         }
 
         // Load Raw file and covert to String
@@ -109,10 +113,12 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         // Parser json data
         parserJson(data);
 
-        // insert to ListView
+        // insert and init to ListView
         LongitudeArr = new String[dbTouris.size()];
         LatitudeArr = new String[dbTouris.size()];
         namesArr = new String[dbTouris.size()];
+        xCoordinate = new double[dbTouris.size()];
+        yCoordinate = new double[dbTouris.size()];
 
         for (int i = 0; i < dbTouris.size(); i++) {
             LongitudeArr[i] = dbTouris.get(i).getLongitude();
@@ -120,6 +126,12 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             namesArr[i] = dbTouris.get(i).getName();
             Log.d("Coordinate", "Longitude: " + LongitudeArr[i].toString() + ", Latitude: " + LatitudeArr[i].toString());
         }
+
+//        getAzimuthFromGPS(Double.parseDouble(LatitudeArr[0].toString()), Double.parseDouble(LongitudeArr[0].toString()),
+//                          Double.parseDouble(LatitudeArr[1].toString()), Double.parseDouble(LongitudeArr[1].toString()));
+//
+//        getAzimuthFromGPS(Double.parseDouble(LatitudeArr[1].toString()), Double.parseDouble(LongitudeArr[1].toString()),
+//                          Double.parseDouble(LatitudeArr[0].toString()), Double.parseDouble(LongitudeArr[0].toString()));
     }
 
     @Override
@@ -235,8 +247,6 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             } catch (Exception e) {
 
             }
-
-
         }
 
         @Override
@@ -290,15 +300,20 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
+            for (int i = 0; i < 2; i++) {
+                createNewObj(canvas, xCoordinate[i], yCoordinate[i], i);
+            }
 
-            createNewObj(canvas, Math.random() * 100, Math.random() * 50, 0);
-            createNewObj(canvas, Math.random() * 600, Math.random() * 300, 1);
+//            createNewObj(canvas, ((double) 50), ((double) 300), 0);
+//            createNewObj(canvas, ((double) 600), ((double) 300), 1);
+//            createNewObj(canvas, ((double) 50), ((double) 1000), 2);
+//            createNewObj(canvas, ((double) 600), ((double) 1000), 3);
 
 //            Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 //            contentPaint.setTextAlign(Paint.Align.CENTER);
 //            contentPaint.setTextSize(40);
 //            contentPaint.setColor(Color.RED);
-//            canvas.drawText(accelData, canvas.getWidth() / 2, canvas.getHeight() / 4, contentPaint);
+//            canvas.drawText(gyroData, canvas.getWidth() / 2, canvas.getHeight() / 4, contentPaint);
 //
 //            Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 //            contentPaint.setColor(Color.GREEN);
@@ -328,21 +343,44 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 
         @Override
         public void onSensorChanged(SensorEvent event) {
-            StringBuilder msg = new StringBuilder(event.sensor.getName()).append(" ");
-            for (float value : event.values) {
-                msg.append("[").append(value).append("]");
+            double azimuth;
+
+            for (int i = 0; i < 10; i++) {
+                azimuth = getAzimuthFromGPS(Double.parseDouble(LatitudeArr[i].toString()), Double.parseDouble(LongitudeArr[i].toString()),
+                        Double.parseDouble(LatitudeArr[i + 10].toString()), Double.parseDouble(LongitudeArr[i + 10].toString()));
+
+                /* dummy x-coordinate and y-coordinate */
+                if (azimuth < 90) {
+                    xCoordinate[i] = azimuth + 600;
+                    yCoordinate[i] = azimuth + 300;
+                } else if (azimuth < 180) {
+                    xCoordinate[i] = azimuth + 600;
+                    yCoordinate[i] = azimuth + 1000;
+                } else if (azimuth < 270) {
+                    xCoordinate[i] = azimuth + 50;
+                    yCoordinate[i] = azimuth + 1000;
+                } else {
+                    xCoordinate[i] = azimuth + 50;
+                    yCoordinate[i] = azimuth + 300;
+                }
             }
 
+//            StringBuilder msg = new StringBuilder(event.sensor.getName()).append(" ");
+//            for (float value : event.values) {
+//                msg.append("[").append(value).append("]");
+//            }
+
             switch (event.sensor.getType()) {
-                case Sensor.TYPE_ACCELEROMETER:
-                    accelData = msg.toString();
-                    break;
+//                case Sensor.TYPE_ACCELEROMETER:
+//                    accelData = msg.toString();
+//                    break;
 //                case Sensor.TYPE_GYROSCOPE:
 //                    gyroData = msg.toString();
+//                    Log.d("TYPE_GYROSCOPE", gyroData);
 //                    break;
-                case Sensor.TYPE_MAGNETIC_FIELD:
-                    compassData = msg.toString();
-                    break;
+//                case Sensor.TYPE_MAGNETIC_FIELD:
+//                    compassData = msg.toString();
+//                    break;
             }
 
             this.invalidate(); //well be call OnDraw() always
@@ -397,16 +435,36 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         contentPaint.setColor(Color.GREEN);
         contentPaint.setTextSize(50);
 
-        w = x.intValue() + 440;
-        h = y.intValue() + 160;
-        areaRect = new Rect(x.intValue() - 30, y.intValue(), w, h);
+        w = x.intValue() + 400;
+        h = y.intValue() + 100;
+        areaRect = new Rect(x.intValue(), y.intValue(), w, h);
         canvas.drawRect(areaRect, contentPaint);
 
         RectF rectf = new RectF(areaRect);
-        rectf.left += (areaRect.width()) / 4.0f;
+        rectf.left += (areaRect.width()) / 10.0f;
         rectf.top += (areaRect.height()) / 4.0f;
 
         contentPaint.setColor(Color.WHITE);
         canvas.drawText(namesArr[index], rectf.left, rectf.top - contentPaint.ascent(), contentPaint);
+    }
+
+    private double getAzimuthFromGPS(double lat_a, double lng_a, double lat_b, double lng_b) {
+        double d;
+        lat_a = lat_a * Math.PI / 180;
+        lng_a = lng_a * Math.PI / 180;
+        lat_b = lat_b * Math.PI / 180;
+        lng_b = lng_b * Math.PI / 180;
+
+        d = Math.sin(lat_a) * Math.sin(lat_b) + Math.cos(lat_a) * Math.cos(lat_b) * Math.cos(lng_b - lng_a);
+        d = Math.sqrt(1 - d * d);
+        d = Math.cos(lat_b) * Math.sin(lng_b - lng_a) / d;
+        d = Math.asin(d) * 180 / Math.PI;
+
+        if (d < 0) {
+            d += 360;
+        }
+        Log.d("Azimuth", "Azimuth = " + String.valueOf(d));
+// d = Math.round(d*10000);
+        return d;
     }
 }
