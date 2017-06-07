@@ -75,7 +75,14 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private String[] namesArr;
     private double xCoordinate[];
     private double yCoordinate[];
+    private double sampleXCoord[] = {600, 500, 700};
+    private double sampleYCoord[] = {1000, 1200, 1400};
+
+    private int arOri[];
     private Location myLocat;
+    float[] accelerometerValues = new float[3];
+    float[] magneticFieldValues = new float[3];
+    private int myOri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +126,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         namesArr = new String[dbTouris.size()];
         xCoordinate = new double[dbTouris.size()];
         yCoordinate = new double[dbTouris.size()];
+        arOri = new int[dbTouris.size()];
 
         for (int i = 0; i < dbTouris.size(); i++) {
             LongitudeArr[i] = dbTouris.get(i).getLongitude();
@@ -300,8 +308,35 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
-            for (int i = 0; i < 2; i++) {
-                createNewObj(canvas, xCoordinate[i], yCoordinate[i], i);
+            int dispCount = 0;
+
+            switch (myOri) {
+                case 0:
+                case 1:
+                    dbgCreateArObj(canvas, ((double) 300), ((double) 1500), "正北");
+                    break;
+                case 2:
+                case 3:
+                    dbgCreateArObj(canvas, ((double) 300), ((double) 1500), "正東");
+                    break;
+                case 4:
+                case 5:
+                    dbgCreateArObj(canvas, ((double) 300), ((double) 1500), "正南");
+                    for (int i = 0; i < 10; i++) {
+                        if (arOri[i] == 3) {
+                            createNewObj(canvas, sampleXCoord[dispCount], sampleYCoord[dispCount], i);
+                            dispCount++;
+                        }
+
+                        if (dispCount > 2) {
+                            break;
+                        }
+                    }
+                    break;
+                case 6:
+                case 7:
+                    dbgCreateArObj(canvas, ((double) 300), ((double) 1500), "正西");
+                    break;
             }
 
 //            createNewObj(canvas, ((double) 50), ((double) 300), 0);
@@ -346,23 +381,33 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             double azimuth;
 
             for (int i = 0; i < 10; i++) {
-                azimuth = getAzimuthFromGPS(Double.parseDouble(LatitudeArr[i].toString()), Double.parseDouble(LongitudeArr[i].toString()),
-                        Double.parseDouble(LatitudeArr[i + 10].toString()), Double.parseDouble(LongitudeArr[i + 10].toString()));
+                azimuth = getAzimuthFromGPS(Double.parseDouble(LatitudeArr[i].toString()), Double.parseDouble(LongitudeArr[i].toString()), myLocat.getLatitude(), myLocat.getLongitude());
 
-                /* dummy x-coordinate and y-coordinate */
-                if (azimuth < 90) {
-                    xCoordinate[i] = azimuth + 600;
-                    yCoordinate[i] = azimuth + 300;
-                } else if (azimuth < 180) {
-                    xCoordinate[i] = azimuth + 600;
-                    yCoordinate[i] = azimuth + 1000;
-                } else if (azimuth < 270) {
-                    xCoordinate[i] = azimuth + 50;
-                    yCoordinate[i] = azimuth + 1000;
-                } else {
-                    xCoordinate[i] = azimuth + 50;
-                    yCoordinate[i] = azimuth + 300;
+                if (azimuth > 140 && azimuth < 200) {
+                    arOri[i] = 3;
+//                    xCoordinate[i] = azimuth + 600;
+//                    yCoordinate[i] = azimuth + 1000;
+                } else if (azimuth > 180) {
+                    arOri[i] = 5;
                 }
+
+//                azimuth = getAzimuthFromGPS(Double.parseDouble(LatitudeArr[i].toString()), Double.parseDouble(LongitudeArr[i].toString()),
+//                        Double.parseDouble(LatitudeArr[i + 10].toString()), Double.parseDouble(LongitudeArr[i + 10].toString()));
+//
+//                /* dummy x-coordinate and y-coordinate */
+//                if (azimuth < 90) {
+//                    xCoordinate[i] = azimuth + 600;
+//                    yCoordinate[i] = azimuth + 300;
+//                } else if (azimuth < 180) {
+//                    xCoordinate[i] = azimuth + 600;
+//                    yCoordinate[i] = azimuth + 1000;
+//                } else if (azimuth < 270) {
+//                    xCoordinate[i] = azimuth + 50;
+//                    yCoordinate[i] = azimuth + 1000;
+//                } else {
+//                    xCoordinate[i] = azimuth + 50;
+//                    yCoordinate[i] = azimuth + 300;
+//                }
             }
 
 //            StringBuilder msg = new StringBuilder(event.sensor.getName()).append(" ");
@@ -371,18 +416,21 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //            }
 
             switch (event.sensor.getType()) {
-//                case Sensor.TYPE_ACCELEROMETER:
+                case Sensor.TYPE_ACCELEROMETER:
 //                    accelData = msg.toString();
-//                    break;
+                    accelerometerValues = event.values;
+                    break;
 //                case Sensor.TYPE_GYROSCOPE:
 //                    gyroData = msg.toString();
 //                    Log.d("TYPE_GYROSCOPE", gyroData);
 //                    break;
-//                case Sensor.TYPE_MAGNETIC_FIELD:
+                case Sensor.TYPE_MAGNETIC_FIELD:
 //                    compassData = msg.toString();
-//                    break;
+                    magneticFieldValues = event.values;
+                    break;
             }
 
+            calculateOrientation();
             this.invalidate(); //well be call OnDraw() always
         }
 
@@ -448,8 +496,26 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         canvas.drawText(namesArr[index], rectf.left, rectf.top - contentPaint.ascent(), contentPaint);
     }
 
+    public void dbgCreateArObj(Canvas canvas, Double x, Double y, String str) {
+        Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        contentPaint.setColor(Color.RED);
+        contentPaint.setTextSize(50);
+
+        w = x.intValue() + 400;
+        h = y.intValue() + 100;
+        areaRect = new Rect(x.intValue(), y.intValue(), w, h);
+        canvas.drawRect(areaRect, contentPaint);
+
+        RectF rectf = new RectF(areaRect);
+        rectf.left += (areaRect.width()) / 10.0f;
+        rectf.top += (areaRect.height()) / 4.0f;
+
+        contentPaint.setColor(Color.WHITE);
+        canvas.drawText(str, rectf.left, rectf.top - contentPaint.ascent(), contentPaint);
+    }
+
     private double getAzimuthFromGPS(double lat_a, double lng_a, double lat_b, double lng_b) {
-        double d;
+        double d, b;
         lat_a = lat_a * Math.PI / 180;
         lng_a = lng_a * Math.PI / 180;
         lat_b = lat_b * Math.PI / 180;
@@ -458,13 +524,54 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         d = Math.sin(lat_a) * Math.sin(lat_b) + Math.cos(lat_a) * Math.cos(lat_b) * Math.cos(lng_b - lng_a);
         d = Math.sqrt(1 - d * d);
         d = Math.cos(lat_b) * Math.sin(lng_b - lng_a) / d;
+        b = Math.cos(lat_a) * Math.sin(lng_b - lng_a) / d;
+        b = Math.asin(b) * 180 / Math.PI + 180;
         d = Math.asin(d) * 180 / Math.PI;
 
-        if (d < 0) {
-            d += 360;
-        }
-        Log.d("Azimuth", "Azimuth = " + String.valueOf(d));
+//        if (d < 0) {
+//            d += 360;
+//        }
+        Log.d("Azimuth", "Azimuth = " + String.valueOf(b));
 // d = Math.round(d*10000);
-        return d;
+        return b;
+    }
+
+    public void calculateOrientation() {
+        float[] values = new float[3];
+        float[] R = new float[9];
+        SensorManager.getRotationMatrix(R, null, accelerometerValues, magneticFieldValues);
+        SensorManager.getOrientation(R, values);
+
+        // 要经过一次数据格式的转换，转换为度
+        values[0] = (float) Math.toDegrees(values[0]);
+        Log.i("Orientation", values[0] + "");
+        //values[1] = (float) Math.toDegrees(values[1]);
+        //values[2] = (float) Math.toDegrees(values[2]);
+
+        if (values[0] >= -5 && values[0] < 5) {
+            myOri = 0;
+//            Log.i("Orientation", "正北");
+        } else if (values[0] >= 5 && values[0] < 85) {
+            myOri = 1;
+//            Log.i("Orientation", "东北");
+        } else if (values[0] >= 85 && values[0] <= 95) {
+            myOri = 2;
+//            Log.i("Orientation", "正东");
+        } else if (values[0] >= 95 && values[0] < 175) {
+            myOri = 3;
+//            Log.i("Orientation", "东南");
+        } else if ((values[0] >= 175 && values[0] <= 180) || (values[0]) >= -180 && values[0] < -175) {
+            myOri = 4;
+//            Log.i("Orientation", "正南");
+        } else if (values[0] >= -175 && values[0] < -95) {
+            myOri = 5;
+//            Log.i("Orientation", "西南");
+        } else if (values[0] >= -95 && values[0] < -85) {
+            myOri = 6;
+//            Log.i("Orientation", "正西");
+        } else if (values[0] >= -85 && values[0] < -5) {
+            myOri = 7;
+//            Log.i("Orientation", "西北");
+        }
     }
 }

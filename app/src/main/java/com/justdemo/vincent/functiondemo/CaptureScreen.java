@@ -28,7 +28,6 @@ public class CaptureScreen {
         int statusBarHeight = frame.top;
         System.out.println(statusBarHeight);
 
-　
         int width = activity.getWindowManager().getDefaultDisplay().getWidth();
         int height = activity.getWindowManager().getDefaultDisplay().getHeight();
 
@@ -37,7 +36,7 @@ public class CaptureScreen {
         view.destroyDrawingCache();
         return b;
     }
-    
+
     private static void savePic(Bitmap b, String strFileName) {
         FileOutputStream fos = null;
         try {
