@@ -3,6 +3,8 @@ package com.justdemo.vincent.functiondemo;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -78,12 +80,12 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private double yCoordinate[];
     private double sampleXCoord[] = {600, 500, 700};
     private double sampleYCoord[] = {1000, 1200, 1400};
-
     private int arOri[];
     private Location myLocat;
     float[] accelerometerValues = new float[3];
     float[] magneticFieldValues = new float[3];
     private int myOri;
+    private Bitmap arNotFound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +93,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         setContentView(R.layout.activity_cam);
 
         initView();
+        arNotFound = BitmapFactory.decodeResource(getResources(), R.drawable.locat_not_found);
         cameraText.setSurfaceTextureListener(mSurfaceTextureListener);
 
         OverlayView arContent = new OverlayView(getApplicationContext());
@@ -355,8 +358,13 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                 case 7:
                     dbgCreateArObj(canvas, ((double) 300), ((double) 1500), "正西");
                     break;
+                default:
+                    break;
             }
 
+            if (dispCount == 0) {
+                showArNotFound(canvas, 300, 1000, arNotFound);
+            }
 //            createNewObj(canvas, ((double) 50), ((double) 300), 0);
 //            createNewObj(canvas, ((double) 600), ((double) 300), 1);
 //            createNewObj(canvas, ((double) 50), ((double) 1000), 2);
@@ -533,6 +541,15 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 
         contentPaint.setColor(Color.WHITE);
         canvas.drawText(str, rectf.left, rectf.top - contentPaint.ascent(), contentPaint);
+    }
+
+    public void showArNotFound(Canvas canvas, float x, float y, Bitmap bitmap) {
+        Bitmap b = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() / 5, bitmap.getHeight() / 5, false);
+        Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+//        contentPaint.setTextAlign(Paint.Align.CENTER);
+        contentPaint.setTextSize(50);
+        canvas.drawBitmap(b, x, y, contentPaint);
+        canvas.drawText("附近無景點", x + 85, y + 215, contentPaint);
     }
 
     private double getAzimuthFromGPS(double lat_a, double lng_a, double lat_b, double lng_b) {
