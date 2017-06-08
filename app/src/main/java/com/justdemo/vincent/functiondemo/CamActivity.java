@@ -56,6 +56,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private LocationManager locationMgr;
     private final int REQUEST_CAMERA = 1;
     private final int REQUEST_LOCATION = 2;
+    private int isLocatOK = 0;
     private Size previewSize = null;
     private TextureView cameraText = null;
     private CameraDevice camDevice = null;
@@ -102,16 +103,14 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 
         }
 
-        locationMgr = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-        /* Check Permission, if needed */
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.CAMERA}, REQUEST_LOCATION);
         } else {
-            String provider = this.locationMgr.getBestProvider(new Criteria(), true);
-            myLocat = locationMgr.getLastKnownLocation(provider);
-            //Toast.makeText(CamActivity.this, String.valueOf(location.getLatitude()) + ", "+ String.valueOf(location.getLongitude()), Toast.LENGTH_LONG).show();
-            Log.d("GPS", String.valueOf(myLocat.getLatitude()) + ", " + String.valueOf(myLocat.getLongitude()));
+            getMyLocation();
+            isLocatOK = 1;
         }
 
         // Load Raw file and covert to String
@@ -147,10 +146,30 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            if (requestCode == REQUEST_LOCATION) {
+                getMyLocation();
+                isLocatOK = 1;
+            }
             openCamera();
         } else {
             //user do reject
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+    }
+
+    public void getMyLocation() {
+        locationMgr = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+
+        String provider = this.locationMgr.getBestProvider(new Criteria(), true);
+        myLocat = locationMgr.getLastKnownLocation(provider);
+        //Toast.makeText(CamActivity.this, String.valueOf(location.getLatitude()) + ", "+ String.valueOf(location.getLongitude()), Toast.LENGTH_LONG).show();
+        Log.d("GPS", String.valueOf(myLocat.getLatitude()) + ", " + String.valueOf(myLocat.getLongitude()));
     }
 
     private void initView() {
@@ -160,24 +179,23 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        if (location != null) {
-            Toast.makeText(CamActivity.this, String.valueOf(location.getLongitude()), Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(CamActivity.this, "GPS NULL", Toast.LENGTH_LONG).show();
-        }
+//        if (location != null) {
+//            Toast.makeText(CamActivity.this, String.valueOf(location.getLongitude()), Toast.LENGTH_LONG).show();
+//        } else {
+//            Toast.makeText(CamActivity.this, "GPS NULL", Toast.LENGTH_LONG).show();
+//        }
     }
 
     /* invoke onSurfaceTextureAvailable when TextureView is activity */
     private TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        /* Check Permission, if needed */
-            if (ActivityCompat.checkSelfPermission(CamActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(CamActivity.this, new String[]{android.Manifest.permission.CAMERA}, REQUEST_CAMERA);
-            } else {
+//        /* Check Permission, if needed */
+//            if (ActivityCompat.checkSelfPermission(CamActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(CamActivity.this, new String[]{android.Manifest.permission.CAMERA}, REQUEST_CAMERA);
+//            } else {
                 openCamera();
-            }
-
+//            }
         }
 
         @Override
@@ -380,16 +398,17 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         public void onSensorChanged(SensorEvent event) {
             double azimuth;
 
-            for (int i = 0; i < 10; i++) {
-                azimuth = getAzimuthFromGPS(Double.parseDouble(LatitudeArr[i].toString()), Double.parseDouble(LongitudeArr[i].toString()), myLocat.getLatitude(), myLocat.getLongitude());
+            if (isLocatOK == 1) {
+                for (int i = 0; i < 10; i++) {
+                    azimuth = getAzimuthFromGPS(Double.parseDouble(LatitudeArr[i].toString()), Double.parseDouble(LongitudeArr[i].toString()), myLocat.getLatitude(), myLocat.getLongitude());
 
-                if (azimuth > 140 && azimuth < 200) {
-                    arOri[i] = 3;
+                    if (azimuth > 140 && azimuth < 200) {
+                        arOri[i] = 3;
 //                    xCoordinate[i] = azimuth + 600;
 //                    yCoordinate[i] = azimuth + 1000;
-                } else if (azimuth > 180) {
-                    arOri[i] = 5;
-                }
+                    } else if (azimuth > 180) {
+                        arOri[i] = 5;
+                    }
 
 //                azimuth = getAzimuthFromGPS(Double.parseDouble(LatitudeArr[i].toString()), Double.parseDouble(LongitudeArr[i].toString()),
 //                        Double.parseDouble(LatitudeArr[i + 10].toString()), Double.parseDouble(LongitudeArr[i + 10].toString()));
@@ -408,7 +427,9 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //                    xCoordinate[i] = azimuth + 50;
 //                    yCoordinate[i] = azimuth + 300;
 //                }
+                }
             }
+
 
 //            StringBuilder msg = new StringBuilder(event.sensor.getName()).append(" ");
 //            for (float value : event.values) {
