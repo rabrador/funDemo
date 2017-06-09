@@ -86,6 +86,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     float[] magneticFieldValues = new float[3];
     private int myOri;
     private Bitmap arNotFound;
+    private Bitmap arLocatMark;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +95,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 
         initView();
         arNotFound = BitmapFactory.decodeResource(getResources(), R.drawable.locat_not_found);
+        arLocatMark = BitmapFactory.decodeResource(getResources(), R.drawable.ar_locat_mark);
         cameraText.setSurfaceTextureListener(mSurfaceTextureListener);
 
         OverlayView arContent = new OverlayView(getApplicationContext());
@@ -349,7 +351,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                             dispCount++;
                         }
 
-                        if (dispCount > 2) {
+                        if (dispCount > 1) {
                             break;
                         }
                     }
@@ -508,21 +510,23 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     }
 
     public void createNewObj(Canvas canvas, Double x, Double y, int index) {
+        Bitmap b = Bitmap.createScaledBitmap(arLocatMark, arLocatMark.getWidth() / 2, arLocatMark.getHeight() / 2, false);
         Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        contentPaint.setColor(Color.GREEN);
+//        contentPaint.setColor(Color.GREEN);
         contentPaint.setTextSize(50);
 
-        w = x.intValue() + 400;
-        h = y.intValue() + 100;
-        areaRect = new Rect(x.intValue(), y.intValue(), w, h);
-        canvas.drawRect(areaRect, contentPaint);
+//        w = x.intValue() + 400;
+//        h = y.intValue() + 100;
+//        areaRect = new Rect(x.intValue(), y.intValue(), w, h);
+//        canvas.drawRect(areaRect, contentPaint);
 
-        RectF rectf = new RectF(areaRect);
-        rectf.left += (areaRect.width()) / 10.0f;
-        rectf.top += (areaRect.height()) / 4.0f;
+//        RectF rectf = new RectF(areaRect);
+//        rectf.left += (areaRect.width()) / 10.0f;
+//        rectf.top += (areaRect.height()) / 4.0f;
 
-        contentPaint.setColor(Color.WHITE);
-        canvas.drawText(namesArr[index], rectf.left, rectf.top - contentPaint.ascent(), contentPaint);
+//        contentPaint.setColor(Color.WHITE);
+        canvas.drawBitmap(b, x.floatValue(), y.floatValue(), contentPaint);
+        canvas.drawText(namesArr[index], x.floatValue() + 110, y.floatValue() + 150, contentPaint);
     }
 
     public void dbgCreateArObj(Canvas canvas, Double x, Double y, String str) {
