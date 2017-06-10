@@ -38,6 +38,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -87,6 +88,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private int myOri;
     private Bitmap arNotFound;
     private Bitmap arLocatMark;
+    private ImageButton btnScreen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,6 +182,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private void initView() {
         cameraText = (TextureView) findViewById(R.id.textureView);
         frameAR = (FrameLayout) findViewById(R.id.framelayout);
+        btnScreen = (ImageButton) findViewById(R.id.imgBtn);
     }
 
     @Override
