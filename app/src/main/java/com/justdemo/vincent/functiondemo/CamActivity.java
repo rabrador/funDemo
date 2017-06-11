@@ -32,11 +32,14 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -59,6 +62,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private LocationManager locationMgr;
     private final int REQUEST_CAMERA = 1;
     private final int REQUEST_LOCATION = 2;
+    private final int REQUEST_SCREEN_SHOT = 3;
     private int isLocatOK = 0;
     private Size previewSize = null;
     private TextureView cameraText = null;
@@ -89,10 +93,13 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private Bitmap arNotFound;
     private Bitmap arLocatMark;
     private ImageButton btnScreen;
+    private Canvas screenShotCanvas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_cam);
 
         initView();
@@ -141,11 +148,20 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             Log.d("Coordinate", "Longitude: " + LongitudeArr[i].toString() + ", Latitude: " + LatitudeArr[i].toString());
         }
 
-//        getAzimuthFromGPS(Double.parseDouble(LatitudeArr[0].toString()), Double.parseDouble(LongitudeArr[0].toString()),
-//                          Double.parseDouble(LatitudeArr[1].toString()), Double.parseDouble(LongitudeArr[1].toString()));
-//
-//        getAzimuthFromGPS(Double.parseDouble(LatitudeArr[1].toString()), Double.parseDouble(LongitudeArr[1].toString()),
-//                          Double.parseDouble(LatitudeArr[0].toString()), Double.parseDouble(LongitudeArr[0].toString()));
+        btnScreen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //screenShot(getWindow().getDecorView().getRootView());
+                captureScreen(REQUEST_SCREEN_SHOT);
+            }
+        });
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+
+        Toast.makeText(this, String.valueOf(height) + " " + String.valueOf(width), Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -157,6 +173,8 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             if (requestCode == REQUEST_LOCATION) {
                 getMyLocation();
                 isLocatOK = 1;
+            } else if (requestCode == REQUEST_SCREEN_SHOT) {
+                captureScreen(REQUEST_SCREEN_SHOT);
             }
             openCamera();
         } else {
@@ -187,23 +205,14 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-//        if (location != null) {
-//            Toast.makeText(CamActivity.this, String.valueOf(location.getLongitude()), Toast.LENGTH_LONG).show();
-//        } else {
-//            Toast.makeText(CamActivity.this, "GPS NULL", Toast.LENGTH_LONG).show();
-//        }
+
     }
 
     /* invoke onSurfaceTextureAvailable when TextureView is activity */
     private TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-//        /* Check Permission, if needed */
-//            if (ActivityCompat.checkSelfPermission(CamActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-//                ActivityCompat.requestPermissions(CamActivity.this, new String[]{android.Manifest.permission.CAMERA}, REQUEST_CAMERA);
-//            } else {
-                openCamera();
-//            }
+            openCamera();
         }
 
         @Override
@@ -370,11 +379,8 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             if (dispCount == 0) {
                 showArNotFound(canvas, 300, 1000, arNotFound);
             }
-//            createNewObj(canvas, ((double) 50), ((double) 300), 0);
-//            createNewObj(canvas, ((double) 600), ((double) 300), 1);
-//            createNewObj(canvas, ((double) 50), ((double) 1000), 2);
-//            createNewObj(canvas, ((double) 600), ((double) 1000), 3);
 
+            screenShotCanvas = canvas;
 //            Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 //            contentPaint.setTextAlign(Paint.Align.CENTER);
 //            contentPaint.setTextSize(40);
@@ -576,7 +582,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //        if (d < 0) {
 //            d += 360;
 //        }
-        Log.d("Azimuth", "Azimuth = " + String.valueOf(b));
+//        Log.d("Azimuth", "Azimuth = " + String.valueOf(b));
 // d = Math.round(d*10000);
         return b;
     }
@@ -589,7 +595,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 
         // 要经过一次数据格式的转换，转换为度
         values[0] = (float) Math.toDegrees(values[0]);
-        Log.i("Orientation", values[0] + "");
+//        Log.i("Orientation", values[0] + "");
         //values[1] = (float) Math.toDegrees(values[1]);
         //values[2] = (float) Math.toDegrees(values[2]);
 
@@ -617,6 +623,56 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         } else if (values[0] >= -85 && values[0] < -5) {
             myOri = 7;
 //            Log.i("Orientation", "西北");
+        }
+    }
+
+    public Bitmap screenShot(View view) {
+        Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        view.draw(canvas);
+        return bitmap;
+    }
+
+    public static Bitmap getScreenShot(View view) {
+        View screenView = view.getRootView();
+        screenView.setDrawingCacheEnabled(true);
+        Bitmap bitmap = Bitmap.createBitmap(screenView.getDrawingCache());
+        screenView.setDrawingCacheEnabled(false);
+        return bitmap;
+    }
+
+    private void captureScreen(int requestCode) {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCode);
+        } else {
+//            CaptureScreen.shoot(getWindow().getDecorView().findViewById(android.R.id.content));
+//            CaptureScreen.savePic(getScreenShot(getWindow().getDecorView().findViewById(android.R.id.content)), "sdcard/yyy.png");
+
+            Bitmap bitmap = cameraText.getBitmap();
+            Canvas canvas = new Canvas(bitmap);
+            Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+//            dbgCreateArObj(canvas, ((double) 0), ((double) 0), "TESTTTTTTTT");
+            showArNotFound(canvas, 300, 1000, arNotFound);
+
+            CaptureScreen.savePic(bitmap, "sdcard/yyy.png");
+//            Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+////            Canvas canvas = new Canvas(bitmap);
+//            screenShotCanvas.drawBitmap(bitmap, 100, 1000, contentPaint);
+////            getWindow().getDecorView().getRootView().draw(canvas);
+//            CaptureScreen.savePic(bitmap,"sdcard/ttt.png");
+
+//            Canvas canvas = new Canvas(screenShot(cameraText));
+//            Drawable bgDrawable = cameraText.getBackground();
+//            if (bgDrawable!=null)
+//                bgDrawable.draw(canvas);
+//            else
+//                canvas.drawColor(Color.WHITE);
+//
+//            cameraText.draw(canvas);
+//            CaptureScreen.savePic(screenShot(cameraText),"sdcard/ttt.png");
+
         }
     }
 }

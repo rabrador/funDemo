@@ -37,7 +37,7 @@ public class CaptureScreen {
         return b;
     }
 
-    private static void savePic(Bitmap b, String strFileName) {
+    public static void savePic(Bitmap b, String strFileName) {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(strFileName);
