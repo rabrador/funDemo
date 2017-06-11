@@ -94,6 +94,8 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private Bitmap arLocatMark;
     private ImageButton btnScreen;
     private Canvas screenShotCanvas;
+    private int screenHeight;
+    private int screenWidth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,12 +158,11 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             }
         });
 
+        /* Get Screen height and width */
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
-        int width = displayMetrics.widthPixels;
-
-        Toast.makeText(this, String.valueOf(height) + " " + String.valueOf(width), Toast.LENGTH_LONG).show();
+        screenHeight = displayMetrics.heightPixels;
+        screenWidth = displayMetrics.widthPixels;
     }
 
     @Override
@@ -348,15 +349,15 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             switch (myOri) {
                 case 0:
                 case 1:
-                    dbgCreateArObj(canvas, ((double) 300), ((double) 1500), "正北");
+                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "正北");
                     break;
                 case 2:
                 case 3:
-                    dbgCreateArObj(canvas, ((double) 300), ((double) 1500), "正東");
+                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "正東");
                     break;
                 case 4:
                 case 5:
-                    dbgCreateArObj(canvas, ((double) 300), ((double) 1500), "正南");
+                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "正南");
                     for (int i = 0; i < 10; i++) {
                         if (arOri[i] == 3) {
                             createNewObj(canvas, sampleXCoord[dispCount], sampleYCoord[dispCount], i);
@@ -370,47 +371,15 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                     break;
                 case 6:
                 case 7:
-                    dbgCreateArObj(canvas, ((double) 300), ((double) 1500), "正西");
+                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "正西");
                     break;
                 default:
                     break;
             }
 
             if (dispCount == 0) {
-                showArNotFound(canvas, 300, 1000, arNotFound);
+                showArNotFound(canvas, ((float) (screenWidth * 0.35)), (((float) (screenHeight * 0.6))), arNotFound);
             }
-
-            screenShotCanvas = canvas;
-//            Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-//            contentPaint.setTextAlign(Paint.Align.CENTER);
-//            contentPaint.setTextSize(40);
-//            contentPaint.setColor(Color.RED);
-//            canvas.drawText(gyroData, canvas.getWidth() / 2, canvas.getHeight() / 4, contentPaint);
-//
-//            Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-//            contentPaint.setColor(Color.GREEN);
-//            contentPaint.setTextSize(50);
-//
-//            x = Math.random() * 23;
-//            y = Math.random() * 51;
-//            w = ((int) x) + 440;
-//            h = ((int) y) + 160;
-//            areaRect = new Rect(((int) x) - 30, ((int) y), w, h);
-//            canvas.drawRect(areaRect, contentPaint);
-//
-//            RectF rectf = new RectF(areaRect);
-//            // measure text width
-//            //rectf.right = contentPaint.measureText(accelData, 0, accelData.length());
-//            // measure text height
-//            //rectf.bottom = contentPaint.descent() - contentPaint.ascent();
-//
-//            rectf.left += (areaRect.width() ) / 4.0f;
-//            rectf.top += (areaRect.height() ) / 4.0f;
-//
-//            contentPaint.setColor(Color.WHITE);
-//            canvas.drawText(namesArr[0], rectf.left, rectf.top - contentPaint.ascent(), contentPaint);
-//
-//            canvas.drawText(namesArr[1], rectf.left, rectf.top - contentPaint.ascent(), contentPaint);
         }
 
         @Override
@@ -538,14 +507,14 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         canvas.drawText(namesArr[index], x.floatValue() + 110, y.floatValue() + 150, contentPaint);
     }
 
-    public void dbgCreateArObj(Canvas canvas, Double x, Double y, String str) {
+    public void dbgCreateArObj(Canvas canvas, float x, float y, String str) {
         Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         contentPaint.setColor(Color.RED);
         contentPaint.setTextSize(50);
 
-        w = x.intValue() + 400;
-        h = y.intValue() + 100;
-        areaRect = new Rect(x.intValue(), y.intValue(), w, h);
+        w = ((int) x) + 400;
+        h = ((int) y) + 100;
+        areaRect = new Rect(((int) x), ((int) y), w, h);
         canvas.drawRect(areaRect, contentPaint);
 
         RectF rectf = new RectF(areaRect);
