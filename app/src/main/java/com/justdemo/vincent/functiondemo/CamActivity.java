@@ -83,8 +83,8 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private String[] namesArr;
     private double xCoordinate[];
     private double yCoordinate[];
-    private double sampleXCoord[] = {600, 500, 700};
-    private double sampleYCoord[] = {1000, 1200, 1400};
+    private double sampleXCoord[] = {600, 300, 700};
+    private double sampleYCoord[] = {400, 1200, 1400};
     private int arOri[];
     private Location myLocat;
     float[] accelerometerValues = new float[3];
@@ -490,19 +490,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     public void createNewObj(Canvas canvas, Double x, Double y, int index) {
         Bitmap b = Bitmap.createScaledBitmap(arLocatMark, arLocatMark.getWidth() / 2, arLocatMark.getHeight() / 2, false);
         Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-//        contentPaint.setColor(Color.GREEN);
         contentPaint.setTextSize(50);
-
-//        w = x.intValue() + 400;
-//        h = y.intValue() + 100;
-//        areaRect = new Rect(x.intValue(), y.intValue(), w, h);
-//        canvas.drawRect(areaRect, contentPaint);
-
-//        RectF rectf = new RectF(areaRect);
-//        rectf.left += (areaRect.width()) / 10.0f;
-//        rectf.top += (areaRect.height()) / 4.0f;
-
-//        contentPaint.setColor(Color.WHITE);
         canvas.drawBitmap(b, x.floatValue(), y.floatValue(), contentPaint);
         canvas.drawText(namesArr[index], x.floatValue() + 110, y.floatValue() + 150, contentPaint);
     }
@@ -615,33 +603,12 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCode);
         } else {
-//            CaptureScreen.shoot(getWindow().getDecorView().findViewById(android.R.id.content));
-//            CaptureScreen.savePic(getScreenShot(getWindow().getDecorView().findViewById(android.R.id.content)), "sdcard/yyy.png");
-
             Bitmap bitmap = cameraText.getBitmap();
             Canvas canvas = new Canvas(bitmap);
-            Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
-//            dbgCreateArObj(canvas, ((double) 0), ((double) 0), "TESTTTTTTTT");
-            showArNotFound(canvas, 300, 1000, arNotFound);
+//            Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
+            showArNotFound(canvas, ((float) (screenWidth * 0.35)), (((float) (screenHeight * 0.6))), arNotFound);
             CaptureScreen.savePic(bitmap, "sdcard/yyy.png");
-//            Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-////            Canvas canvas = new Canvas(bitmap);
-//            screenShotCanvas.drawBitmap(bitmap, 100, 1000, contentPaint);
-////            getWindow().getDecorView().getRootView().draw(canvas);
-//            CaptureScreen.savePic(bitmap,"sdcard/ttt.png");
-
-//            Canvas canvas = new Canvas(screenShot(cameraText));
-//            Drawable bgDrawable = cameraText.getBackground();
-//            if (bgDrawable!=null)
-//                bgDrawable.draw(canvas);
-//            else
-//                canvas.drawColor(Color.WHITE);
-//
-//            cameraText.draw(canvas);
-//            CaptureScreen.savePic(screenShot(cameraText),"sdcard/ttt.png");
-
         }
     }
 }
