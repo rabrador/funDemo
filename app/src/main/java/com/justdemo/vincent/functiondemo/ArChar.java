@@ -8,37 +8,56 @@ import java.util.ArrayList;
 
 public class ArChar {
     private int arListSize;
+    private ArrayList<ArInfo> dbArInfo = new ArrayList<>();
 
-    ArrayList<ArInfo> dbArInfo = new ArrayList<>();
-
-    private class ArInfo {
-        private int longitude;
-        private int latitude;
+    public class ArInfo {
+        private String name;
+        private float longitude;
+        private float latitude;
         private float xCoordinate;
         private float yCoordinate;
         private int arQuadrant; // 0:North, 1:east, 2:north, 3:west
+        private int isShown;
 
-        public ArInfo(int longitude, int latitude, float xCoordinate, float yCoordinate, int arQuadrant) {
+        public ArInfo(String name, float latitude, float longitude, float xCoordinate, float yCoordinate, int arQuadrant, int isShown) {
+            this.name = name;
             this.longitude = longitude;
             this.latitude = latitude;
             this.xCoordinate = xCoordinate;
             this.yCoordinate = yCoordinate;
             this.arQuadrant = arQuadrant;
+            this.isShown = isShown;
         }
 
-        public int getLongitude() {
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getIsShown() {
+            return isShown;
+        }
+
+        public void setIsShown(int isShown) {
+            this.isShown = isShown;
+        }
+
+        public float getLongitude() {
             return longitude;
         }
 
-        public void setLongitude(int longitude) {
+        public void setLongitude(float longitude) {
             this.longitude = longitude;
         }
 
-        public int getLatitude() {
+        public float getLatitude() {
             return latitude;
         }
 
-        public void setLatitude(int latitude) {
+        public void setLatitude(float latitude) {
             this.latitude = latitude;
         }
 
@@ -74,9 +93,45 @@ public class ArChar {
         arListSize = size;
     }
 
-    public void setData(int longitude, int latitude, float xCoordinate, float yCoordinate, int arQuadrant) {
-        ArInfo arInfo = new ArInfo(longitude, latitude, xCoordinate, yCoordinate, arQuadrant);
+    public void setData(String name, float latitude, float longitude, float xCoordinate, float yCoordinate, int arQuadrant, int isShown) {
+        ArInfo arInfo = new ArInfo(name, latitude, longitude, xCoordinate, yCoordinate, arQuadrant, isShown);
         dbArInfo.add(arInfo);
     }
 
+    public String getName(int index) {
+        return dbArInfo.get(index).getName();
+    }
+
+    public float getLongitude(int index) {
+        return dbArInfo.get(index).getLongitude();
+    }
+
+    public float getLatitude(int index) {
+        return dbArInfo.get(index).getLatitude();
+    }
+
+    public float getXCoord(int index) {
+        return dbArInfo.get(index).getxCoordinate();
+    }
+
+    public float getYCoord(int index) {
+        return dbArInfo.get(index).getyCoordinate();
+    }
+
+    public void setXYcoord(int index, float x, float y) {
+        dbArInfo.get(index).setxCoordinate(x);
+        dbArInfo.get(index).setyCoordinate(y);
+    }
+
+    public int getQuadrant(int index) {
+        return dbArInfo.get(index).getArQuadrant();
+    }
+
+    public void setQuadrant(int index, int quad) {
+        dbArInfo.get(index).setArQuadrant(quad);
+    }
+
+    public void setIsShown(int index, int isShown) {
+        dbArInfo.get(index).setIsShown(isShown);
+    }
 }

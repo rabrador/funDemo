@@ -48,11 +48,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationServices;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -96,6 +91,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private Canvas screenShotCanvas;
     private int screenHeight;
     private int screenWidth;
+    private ArChar dbAR = new ArChar();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,7 +112,6 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addApi(LocationServices.API)
                     .build();
-
         }
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -131,25 +126,31 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         }
 
         // Load Raw file and covert to String
-        covRawToString(loadRawFile());
+//        data = useAPI.covRawToString(getResources().openRawResource(R.raw.data));
 
         // Parser json data
-        parserJson(data);
+//        dbTouris = useAPI.parserJsonFromTouris(data);
+
+        /*************************  For Debug Beg ************************* */
+        dbAR.setData("新竹關東橋郵局", ((float) 24.782646), ((float) 121.018707), 0, 0, 0, 0);
+        dbAR.setData("竹北火車站", ((float) 24.839656), ((float) 121.009613), 0, 0, 0, 0);
+        dbAR.setData("十八尖山停車場", ((float) 24.795013), ((float) 120.986764), 0, 0, 0, 0);
+        /*************************  For Debug End ************************* */
 
         // insert and init to ListView
-        LongitudeArr = new String[dbTouris.size()];
-        LatitudeArr = new String[dbTouris.size()];
-        namesArr = new String[dbTouris.size()];
-        xCoordinate = new double[dbTouris.size()];
-        yCoordinate = new double[dbTouris.size()];
-        arOri = new int[dbTouris.size()];
-
-        for (int i = 0; i < dbTouris.size(); i++) {
-            LongitudeArr[i] = dbTouris.get(i).getLongitude();
-            LatitudeArr[i] = dbTouris.get(i).getLatitude();
-            namesArr[i] = dbTouris.get(i).getName();
-            Log.d("Coordinate", "Longitude: " + LongitudeArr[i].toString() + ", Latitude: " + LatitudeArr[i].toString());
-        }
+//        LongitudeArr = new String[dbTouris.size()];
+//        LatitudeArr = new String[dbTouris.size()];
+//        namesArr = new String[dbTouris.size()];
+//        xCoordinate = new double[dbTouris.size()];
+//        yCoordinate = new double[dbTouris.size()];
+//        arOri = new int[dbTouris.size()];
+//
+//        for (int i = 0; i < dbTouris.size(); i++) {
+//            LongitudeArr[i] = dbTouris.get(i).getLongitude();
+//            LatitudeArr[i] = dbTouris.get(i).getLatitude();
+//            namesArr[i] = dbTouris.get(i).getName();
+//            Log.d("Coordinate", "Longitude: " + LongitudeArr[i].toString() + ", Latitude: " + LatitudeArr[i].toString());
+//        }
 
         btnScreen.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -176,12 +177,10 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                     getMyLocation();
                     isLocatOK = 1;
                     openCamera();
-                    captureScreen(REQUEST_SCREEN_SHOT);
                     break;
                 case REQUEST_SCREEN_SHOT:
                     captureScreen(REQUEST_SCREEN_SHOT);
                     break;
-
             }
 
         } else {
@@ -355,29 +354,38 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             switch (myOri) {
                 case 0:
                 case 1:
-                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "正北");
+                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "北");
                     break;
                 case 2:
                 case 3:
-                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "正東");
+                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "東");
                     break;
                 case 4:
                 case 5:
-                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "正南");
-                    for (int i = 0; i < 10; i++) {
-                        if (arOri[i] == 3) {
+                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "南");
+//                    for (int i = 0; i < 10; i++) {
+//                        if (arOri[i] == 3) {
+//                            createNewObj(canvas, sampleXCoord[dispCount], sampleYCoord[dispCount], i);
+//                            dispCount++;
+//                        }
+//
+//                        if (dispCount > 1) {
+//                            break;
+//                        }
+//                    }
+                    /*************************  For Debug Beg **************************/
+                    for (int i = 0; i < 2; i++) {
+                        if ((dbAR.getQuadrant(i) == 5) || (dbAR.getQuadrant(i) == 3)) {
                             createNewObj(canvas, sampleXCoord[dispCount], sampleYCoord[dispCount], i);
+                            dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
                             dispCount++;
                         }
-
-                        if (dispCount > 1) {
-                            break;
-                        }
                     }
+                    /*************************  For Debug End **************************/
                     break;
                 case 6:
                 case 7:
-                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "正西");
+                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "西");
                     break;
                 default:
                     break;
@@ -393,18 +401,38 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             double azimuth;
 
             if (isLocatOK == 1) {
-                for (int i = 0; i < 10; i++) {
-                    azimuth = getAzimuthFromGPS(Double.parseDouble(LatitudeArr[i].toString()), Double.parseDouble(LongitudeArr[i].toString()), myLocat.getLatitude(), myLocat.getLongitude());
-
-                    if (azimuth > 140 && azimuth < 200) {
-                        arOri[i] = 3;
-//                    xCoordinate[i] = azimuth + 600;
-//                    yCoordinate[i] = azimuth + 1000;
-                    } else if (azimuth > 180) {
-                        arOri[i] = 5;
+//                for (int i = 0; i < 10; i++) {
+//                    azimuth = getAzimuthFromGPS(Double.parseDouble(LatitudeArr[i].toString()), Double.parseDouble(LongitudeArr[i].toString()), myLocat.getLatitude(), myLocat.getLongitude());
+//
+//                    if (azimuth > 140 && azimuth < 200) {
+//                        arOri[i] = 3;
+//                    } else if (azimuth > 180) {
+//                        arOri[i] = 5;
+//                    }
+//                }
+                /*************************  For Debug Beg ************************* */
+                // Latitude:22.xxxxxx, Longitude:100.xxxxx
+                for (int i = 0; i < 2; i++) {
+                    if (dbAR.getLatitude(i) > myLocat.getLatitude()) {
+                        Log.d("getLatitude", String.valueOf(dbAR.getLatitude(i)));
+                        if (dbAR.getLongitude(i) > myLocat.getLongitude()) {
+//                            Log.d("org", "east north");
+                            dbAR.setQuadrant(i, 1);
+                        } else {
+//                            Log.d("org", "west north");
+                            dbAR.setQuadrant(i, 7);
+                        }
+                    } else {
+                        if (dbAR.getLongitude(i) > myLocat.getLongitude()) {
+//                            Log.d("org", "east south");
+                            dbAR.setQuadrant(i, 3);
+                        } else {
+//                            Log.d("org", "west south");
+                            dbAR.setQuadrant(i, 5);
+                        }
                     }
-
                 }
+                /*************************  For Debug End ************************* */
             }
 
 
@@ -438,50 +466,13 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         }
     }
 
-    public InputStream loadRawFile() {
-        return getResources().openRawResource(R.raw.data);
-    }
-
-    public String covRawToString(InputStream inputStream) {
-
-        try {
-            int size = inputStream.available();
-
-            byte[] buffer = new byte[size];
-            inputStream.read(buffer);
-            inputStream.close();
-            data = new String(buffer, "UTF-8");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return data;
-    }
-
-    public void parserJson(String sJson) {
-        try {
-            JSONObject obj = new JSONObject(sJson);
-            JSONArray array = obj.getJSONArray("data");
-
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject subObj = array.getJSONObject(i);
-
-                Touris touris = new Touris(subObj.getString("Name"), subObj.getString("Title"), subObj.getString("Introduction"),
-                        subObj.getString("Nlat"), subObj.getString("Elong"));
-                dbTouris.add(touris);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public void createNewObj(Canvas canvas, Double x, Double y, int index) {
         Bitmap b = Bitmap.createScaledBitmap(arLocatMark, arLocatMark.getWidth() / 2, arLocatMark.getHeight() / 2, false);
         Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         contentPaint.setTextSize(50);
         canvas.drawBitmap(b, x.floatValue(), y.floatValue(), contentPaint);
-        canvas.drawText(namesArr[index], x.floatValue() + 110, y.floatValue() + 150, contentPaint);
+//        canvas.drawText(namesArr[index], x.floatValue() + 110, y.floatValue() + 150, contentPaint);
+        canvas.drawText(dbAR.getName(index), x.floatValue() + 110, y.floatValue() + 150, contentPaint);
     }
 
     public void dbgCreateArObj(Canvas canvas, float x, float y, String str) {
@@ -528,7 +519,8 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //        if (d < 0) {
 //            d += 360;
 //        }
-//        Log.d("Azimuth", "Azimuth = " + String.valueOf(b));
+        Log.d("Azimuth", "Azimuth = " + String.valueOf(b));
+
 // d = Math.round(d*10000);
         return b;
     }
@@ -597,6 +589,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //            Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
             showArNotFound(canvas, ((float) (screenWidth * 0.35)), (((float) (screenHeight * 0.6))), arNotFound);
+
             CaptureScreen.savePic(bitmap, "sdcard/yyy.png");
         }
     }
