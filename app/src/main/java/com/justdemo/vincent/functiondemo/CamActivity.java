@@ -120,8 +120,9 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         }
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION,
                     android.Manifest.permission.CAMERA}, REQUEST_LOCATION);
         } else {
@@ -170,14 +171,19 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            switch (requestCode) {
+                case REQUEST_LOCATION:
+                    getMyLocation();
+                    isLocatOK = 1;
+                    openCamera();
+                    captureScreen(REQUEST_SCREEN_SHOT);
+                    break;
+                case REQUEST_SCREEN_SHOT:
+                    captureScreen(REQUEST_SCREEN_SHOT);
+                    break;
 
-            if (requestCode == REQUEST_LOCATION) {
-                getMyLocation();
-                isLocatOK = 1;
-            } else if (requestCode == REQUEST_SCREEN_SHOT) {
-                captureScreen(REQUEST_SCREEN_SHOT);
             }
-            openCamera();
+
         } else {
             //user do reject
         }
@@ -398,23 +404,6 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                         arOri[i] = 5;
                     }
 
-//                azimuth = getAzimuthFromGPS(Double.parseDouble(LatitudeArr[i].toString()), Double.parseDouble(LongitudeArr[i].toString()),
-//                        Double.parseDouble(LatitudeArr[i + 10].toString()), Double.parseDouble(LongitudeArr[i + 10].toString()));
-//
-//                /* dummy x-coordinate and y-coordinate */
-//                if (azimuth < 90) {
-//                    xCoordinate[i] = azimuth + 600;
-//                    yCoordinate[i] = azimuth + 300;
-//                } else if (azimuth < 180) {
-//                    xCoordinate[i] = azimuth + 600;
-//                    yCoordinate[i] = azimuth + 1000;
-//                } else if (azimuth < 270) {
-//                    xCoordinate[i] = azimuth + 50;
-//                    yCoordinate[i] = azimuth + 1000;
-//                } else {
-//                    xCoordinate[i] = azimuth + 50;
-//                    yCoordinate[i] = azimuth + 300;
-//                }
                 }
             }
 
