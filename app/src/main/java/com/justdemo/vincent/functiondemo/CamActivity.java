@@ -50,6 +50,7 @@ import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 public class CamActivity extends AppCompatActivity implements LocationListener {
 
@@ -640,7 +641,9 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                 showArNotFound(canvas, ((float) (screenWidth * 0.35)), (((float) (screenHeight * 0.6))), arNotFound);
             }
 
-            CaptureScreen.savePic(bitmap, "sdcard/yyy.png");
+            Date now = new Date();
+            android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+            CaptureScreen.savePic(bitmap, "sdcard/" + now + ".jpg");
         }
     }
 }
