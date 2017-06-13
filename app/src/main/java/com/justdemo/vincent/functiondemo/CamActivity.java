@@ -132,9 +132,9 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //        dbTouris = useAPI.parserJsonFromTouris(data);
 
         /*************************  For Debug Beg ************************* */
-        dbAR.setData("新竹關東橋郵局", ((float) 24.782646), ((float) 121.018707), 0, 0, 0, 0);
-        dbAR.setData("竹北火車站", ((float) 24.839656), ((float) 121.009613), 0, 0, 0, 0);
-        dbAR.setData("十八尖山停車場", ((float) 24.795013), ((float) 120.986764), 0, 0, 0, 0);
+        dbAR.setData("新竹關東橋郵局", ((float) 24.782646), ((float) 121.018707), 0, 0, 0, 0, 0);
+        dbAR.setData("竹北火車站", ((float) 24.839656), ((float) 121.009613), 0, 0, 0, 0, 0);
+        dbAR.setData("十八尖山停車場", ((float) 24.795013), ((float) 120.986764), 0, 0, 0, 0, 9);
         /*************************  For Debug End ************************* */
 
         // insert and init to ListView
@@ -355,6 +355,18 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                 case 0:
                 case 1:
                     dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "北");
+                    /*************************  For Debug Beg **************************/
+                    for (int i = 0; i < dbAR.getSize(); i++) {
+                        if ((dbAR.getQuadrant(i) == 1) || (dbAR.getQuadrant(i) == 7)) {
+                            createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
+                            dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
+                            dbAR.setIsShown(i, 1);
+                            dispCount++;
+                        } else {
+                            dbAR.setIsShown(i, 0);
+                        }
+                    }
+                    /*************************  For Debug End **************************/
                     break;
                 case 2:
                 case 3:
@@ -374,11 +386,14 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //                        }
 //                    }
                     /*************************  For Debug Beg **************************/
-                    for (int i = 0; i < 2; i++) {
+                    for (int i = 0; i < dbAR.getSize(); i++) {
                         if ((dbAR.getQuadrant(i) == 5) || (dbAR.getQuadrant(i) == 3)) {
-                            createNewObj(canvas, sampleXCoord[dispCount], sampleYCoord[dispCount], i);
+                            createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
                             dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
+                            dbAR.setIsShown(i, 1);
                             dispCount++;
+                        } else {
+                            dbAR.setIsShown(i, 0);
                         }
                     }
                     /*************************  For Debug End **************************/
@@ -386,6 +401,18 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                 case 6:
                 case 7:
                     dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "西");
+                    /*************************  For Debug Beg **************************/
+                    for (int i = 0; i < dbAR.getSize(); i++) {
+                        if ((dbAR.getQuadrant(i) == 5) || (dbAR.getQuadrant(i) == 7)) {
+                            createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
+                            dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
+                            dbAR.setIsShown(i, 1);
+                            dispCount++;
+                        } else {
+                            dbAR.setIsShown(i, 0);
+                        }
+                    }
+                    /*************************  For Debug End **************************/
                     break;
                 default:
                     break;
@@ -399,6 +426,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         @Override
         public void onSensorChanged(SensorEvent event) {
             double azimuth;
+            float dist[] = new float[1];
 
             if (isLocatOK == 1) {
 //                for (int i = 0; i < 10; i++) {
@@ -411,10 +439,16 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //                    }
 //                }
                 /*************************  For Debug Beg ************************* */
+                //          N
+                //          0
+                //      7      1
+                // W 6           2  E
+                //      5      3
+                //          4
+                //          S
                 // Latitude:22.xxxxxx, Longitude:100.xxxxx
-                for (int i = 0; i < 2; i++) {
+                for (int i = 0; i < dbAR.getSize(); i++) {
                     if (dbAR.getLatitude(i) > myLocat.getLatitude()) {
-                        Log.d("getLatitude", String.valueOf(dbAR.getLatitude(i)));
                         if (dbAR.getLongitude(i) > myLocat.getLongitude()) {
 //                            Log.d("org", "east north");
                             dbAR.setQuadrant(i, 1);
@@ -431,6 +465,9 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                             dbAR.setQuadrant(i, 5);
                         }
                     }
+
+                    Location.distanceBetween(myLocat.getLatitude(), myLocat.getLongitude(), dbAR.getLatitude(i), dbAR.getLongitude(i), dist);
+                    dbAR.setDistance(i, ((int) dist[0]));
                 }
                 /*************************  For Debug End ************************* */
             }
@@ -456,7 +493,9 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                     break;
             }
 
+            /* get myself orientation */
             calculateOrientation();
+
             this.invalidate(); //well be call OnDraw() always
         }
 
@@ -466,13 +505,14 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         }
     }
 
-    public void createNewObj(Canvas canvas, Double x, Double y, int index) {
+    public void createNewObj(Canvas canvas, float x, float y, int index) {
         Bitmap b = Bitmap.createScaledBitmap(arLocatMark, arLocatMark.getWidth() / 2, arLocatMark.getHeight() / 2, false);
         Paint contentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         contentPaint.setTextSize(50);
-        canvas.drawBitmap(b, x.floatValue(), y.floatValue(), contentPaint);
+        canvas.drawBitmap(b, x, y, contentPaint);
 //        canvas.drawText(namesArr[index], x.floatValue() + 110, y.floatValue() + 150, contentPaint);
-        canvas.drawText(dbAR.getName(index), x.floatValue() + 110, y.floatValue() + 150, contentPaint);
+        canvas.drawText(dbAR.getName(index), x + 110, y + 150, contentPaint);
+        canvas.drawText("距離為 : " + dbAR.getDistance(index) + "公尺", x + 110, y + 200, contentPaint);
     }
 
     public void dbgCreateArObj(Canvas canvas, float x, float y, String str) {
@@ -580,15 +620,25 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     }
 
     private void captureScreen(int requestCode) {
+        boolean hasObj = false;
+
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCode);
         } else {
             Bitmap bitmap = cameraText.getBitmap();
             Canvas canvas = new Canvas(bitmap);
-//            Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
-            showArNotFound(canvas, ((float) (screenWidth * 0.35)), (((float) (screenHeight * 0.6))), arNotFound);
+            for (int i = 0; i < dbAR.getSize(); i++) {
+                if (dbAR.getIsShown(i) == 1) {
+                    createNewObj(canvas, dbAR.getXCoord(i), dbAR.getYCoord(i), i);
+                    hasObj = true;
+                }
+            }
+
+            if (hasObj == false) {
+                showArNotFound(canvas, ((float) (screenWidth * 0.35)), (((float) (screenHeight * 0.6))), arNotFound);
+            }
 
             CaptureScreen.savePic(bitmap, "sdcard/yyy.png");
         }

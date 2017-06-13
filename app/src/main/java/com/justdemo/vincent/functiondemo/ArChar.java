@@ -12,21 +12,31 @@ public class ArChar {
 
     public class ArInfo {
         private String name;
-        private float longitude;
         private float latitude;
+        private float longitude;
         private float xCoordinate;
         private float yCoordinate;
         private int arQuadrant; // 0:North, 1:east, 2:north, 3:west
         private int isShown;
+        private int distance;
 
-        public ArInfo(String name, float latitude, float longitude, float xCoordinate, float yCoordinate, int arQuadrant, int isShown) {
+        public ArInfo(String name, float latitude, float longitude, float xCoordinate, float yCoordinate, int arQuadrant, int isShown, int distance) {
             this.name = name;
-            this.longitude = longitude;
             this.latitude = latitude;
+            this.longitude = longitude;
             this.xCoordinate = xCoordinate;
             this.yCoordinate = yCoordinate;
             this.arQuadrant = arQuadrant;
             this.isShown = isShown;
+            this.distance = distance;
+        }
+
+        public int getDistance() {
+            return distance;
+        }
+
+        public void setDistance(int distance) {
+            this.distance = distance;
         }
 
         public String getName() {
@@ -93,9 +103,13 @@ public class ArChar {
         arListSize = size;
     }
 
-    public void setData(String name, float latitude, float longitude, float xCoordinate, float yCoordinate, int arQuadrant, int isShown) {
-        ArInfo arInfo = new ArInfo(name, latitude, longitude, xCoordinate, yCoordinate, arQuadrant, isShown);
+    public void setData(String name, float latitude, float longitude, float xCoordinate, float yCoordinate, int arQuadrant, int isShown, int distance) {
+        ArInfo arInfo = new ArInfo(name, latitude, longitude, xCoordinate, yCoordinate, arQuadrant, isShown, distance);
         dbArInfo.add(arInfo);
+    }
+
+    public int getSize() {
+        return dbArInfo.size();
     }
 
     public String getName(int index) {
@@ -131,7 +145,19 @@ public class ArChar {
         dbArInfo.get(index).setArQuadrant(quad);
     }
 
+    public int getIsShown(int index) {
+        return dbArInfo.get(index).getIsShown();
+    }
+
     public void setIsShown(int index, int isShown) {
         dbArInfo.get(index).setIsShown(isShown);
+    }
+
+    public int getDistance(int index) {
+        return dbArInfo.get(index).getDistance();
+    }
+
+    public void setDistance(int index, int dist) {
+        dbArInfo.get(index).setDistance(dist);
     }
 }
