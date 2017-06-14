@@ -53,4 +53,9 @@ public class useAPI {
 
         return list;
     }
+
+    public static boolean isTouchInContain(int width, float touchX, float touchY, float targetX, float targetY) {
+        return touchX > width && touchX < targetX + width &&
+                touchY > width && touchY < targetY + width;
+    }
 }

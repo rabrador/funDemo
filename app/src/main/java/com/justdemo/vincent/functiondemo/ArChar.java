@@ -17,10 +17,10 @@ public class ArChar {
         private float xCoordinate;
         private float yCoordinate;
         private int arQuadrant; // 0:North, 1:east, 2:north, 3:west
-        private int isShown;
+        private boolean isShown;
         private int distance;
 
-        public ArInfo(String name, float latitude, float longitude, float xCoordinate, float yCoordinate, int arQuadrant, int isShown, int distance) {
+        public ArInfo(String name, float latitude, float longitude, float xCoordinate, float yCoordinate, int arQuadrant, boolean isShown, int distance) {
             this.name = name;
             this.latitude = latitude;
             this.longitude = longitude;
@@ -47,11 +47,11 @@ public class ArChar {
             this.name = name;
         }
 
-        public int getIsShown() {
+        public boolean getIsShown() {
             return isShown;
         }
 
-        public void setIsShown(int isShown) {
+        public void setIsShown(boolean isShown) {
             this.isShown = isShown;
         }
 
@@ -103,7 +103,7 @@ public class ArChar {
         arListSize = size;
     }
 
-    public void setData(String name, float latitude, float longitude, float xCoordinate, float yCoordinate, int arQuadrant, int isShown, int distance) {
+    public void setData(String name, float latitude, float longitude, float xCoordinate, float yCoordinate, int arQuadrant, boolean isShown, int distance) {
         ArInfo arInfo = new ArInfo(name, latitude, longitude, xCoordinate, yCoordinate, arQuadrant, isShown, distance);
         dbArInfo.add(arInfo);
     }
@@ -145,11 +145,11 @@ public class ArChar {
         dbArInfo.get(index).setArQuadrant(quad);
     }
 
-    public int getIsShown(int index) {
+    public boolean getIsShown(int index) {
         return dbArInfo.get(index).getIsShown();
     }
 
-    public void setIsShown(int index, int isShown) {
+    public void setIsShown(int index, boolean isShown) {
         dbArInfo.get(index).setIsShown(isShown);
     }
 

@@ -2,6 +2,7 @@ package com.justdemo.vincent.functiondemo;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -35,6 +36,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Size;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -133,9 +135,9 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //        dbTouris = useAPI.parserJsonFromTouris(data);
 
         /*************************  For Debug Beg ************************* */
-        dbAR.setData("新竹關東橋郵局", ((float) 24.782646), ((float) 121.018707), 0, 0, 0, 0, 0);
-        dbAR.setData("竹北火車站", ((float) 24.839656), ((float) 121.009613), 0, 0, 0, 0, 0);
-        dbAR.setData("十八尖山停車場", ((float) 24.795013), ((float) 120.986764), 0, 0, 0, 0, 9);
+        dbAR.setData("新竹關東橋郵局", ((float) 24.782646), ((float) 121.018707), 0, 0, 0, false, 0);
+        dbAR.setData("竹北火車站", ((float) 24.839656), ((float) 121.009613), 0, 0, 0, false, 0);
+        dbAR.setData("十八尖山停車場", ((float) 24.795013), ((float) 120.986764), 0, 0, 0, false, 9);
         /*************************  For Debug End ************************* */
 
         // insert and init to ListView
@@ -333,6 +335,31 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         }
     }
 
+    private final int AR_OBJECT_WIDTH = 400;
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float x = event.getX();
+        float y = event.getY();
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                for (int i = 0; i < dbAR.getSize(); i++) {
+                    if (dbAR.getIsShown(i) == true) {
+                        if (useAPI.isTouchInContain(AR_OBJECT_WIDTH, x, y, dbAR.getXCoord(i), dbAR.getYCoord(i))) {
+                            Intent intCont = new Intent();
+                            intCont.setClass(CamActivity.this, ContentActivity.class);
+                            intCont.putExtra("name", dbAR.getName(i));
+                            startActivity(intCont);
+                        }
+                    }
+                }
+
+                return true;
+        }
+        return super.onTouchEvent(event);
+    }
+
     public class OverlayView extends View implements SensorEventListener {
         public OverlayView(Context context) {
             super(context);
@@ -361,10 +388,10 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                         if ((dbAR.getQuadrant(i) == 1) || (dbAR.getQuadrant(i) == 7)) {
                             createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
                             dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
-                            dbAR.setIsShown(i, 1);
+                            dbAR.setIsShown(i, true);
                             dispCount++;
                         } else {
-                            dbAR.setIsShown(i, 0);
+                            dbAR.setIsShown(i, false);
                         }
                     }
                     /*************************  For Debug End **************************/
@@ -391,10 +418,10 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                         if ((dbAR.getQuadrant(i) == 5) || (dbAR.getQuadrant(i) == 3)) {
                             createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
                             dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
-                            dbAR.setIsShown(i, 1);
+                            dbAR.setIsShown(i, true);
                             dispCount++;
                         } else {
-                            dbAR.setIsShown(i, 0);
+                            dbAR.setIsShown(i, false);
                         }
                     }
                     /*************************  For Debug End **************************/
@@ -407,10 +434,10 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                         if ((dbAR.getQuadrant(i) == 5) || (dbAR.getQuadrant(i) == 7)) {
                             createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
                             dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
-                            dbAR.setIsShown(i, 1);
+                            dbAR.setIsShown(i, true);
                             dispCount++;
                         } else {
-                            dbAR.setIsShown(i, 0);
+                            dbAR.setIsShown(i, false);
                         }
                     }
                     /*************************  For Debug End **************************/
@@ -631,7 +658,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             Canvas canvas = new Canvas(bitmap);
 
             for (int i = 0; i < dbAR.getSize(); i++) {
-                if (dbAR.getIsShown(i) == 1) {
+                if (dbAR.getIsShown(i) == true) {
                     createNewObj(canvas, dbAR.getXCoord(i), dbAR.getYCoord(i), i);
                     hasObj = true;
                 }

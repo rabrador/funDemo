@@ -53,6 +53,7 @@
             android:name=".CamActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity android:name=".ContentActivity"></activity>
     </application>
 
 </manifest>
