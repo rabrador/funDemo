@@ -55,12 +55,22 @@ import java.util.Arrays;
 import java.util.Date;
 
 public class CamActivity extends AppCompatActivity implements LocationListener {
-
-    private GoogleApiClient mGoogleApiClient;
-    private LocationManager locationMgr;
+    /********************
+     * DEFINE VARIABLE
+     ********************/
+    private final boolean DEBUG_MESSAGE = true;
+    private final boolean TEST_TRACE_CODE = true;
     private final int REQUEST_CAMERA = 1;
     private final int REQUEST_LOCATION = 2;
     private final int REQUEST_SCREEN_SHOT = 3;
+    private final int AR_OBJECT_WIDTH = 400;
+    private final int MAXIMUM_NUM_DISPLAY_AR = 2;
+    private final int MINIMUM_DISTANCE_TO_SHOW = 5000;
+    /***********************************************************/
+
+    /******************** LOCAL VARIABLE ********************/
+    private GoogleApiClient mGoogleApiClient;
+    private LocationManager locationMgr;
     private int isLocatOK = 0;
     private Size previewSize = null;
     private TextureView cameraText = null;
@@ -96,6 +106,8 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private int screenWidth;
     private ArChar dbAR = new ArChar();
 
+    /***********************************************************/
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,15 +141,15 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         }
 
         // Load Raw file and covert to String
-//        data = useAPI.covRawToString(getResources().openRawResource(R.raw.data));
+        data = useAPI.covRawToString(getResources().openRawResource(R.raw.data));
 
         // Parser json data
-//        dbTouris = useAPI.parserJsonFromTouris(data);
+        dbTouris = useAPI.parserJsonFromTouris(data);
 
         /*************************  For Debug Beg ************************* */
-        dbAR.setData("新竹關東橋郵局", ((float) 24.782646), ((float) 121.018707), 0, 0, 0, false, 0);
-        dbAR.setData("竹北火車站", ((float) 24.839656), ((float) 121.009613), 0, 0, 0, false, 0);
-        dbAR.setData("十八尖山停車場", ((float) 24.795013), ((float) 120.986764), 0, 0, 0, false, 9);
+//        dbAR.setData("新竹關東橋郵局", ((float) 24.782646), ((float) 121.018707), 0, 0, 0, false, 0);
+//        dbAR.setData("竹北火車站", ((float) 24.839656), ((float) 121.009613), 0, 0, 0, false, 0);
+//        dbAR.setData("十八尖山停車場", ((float) 24.795013), ((float) 120.986764), 0, 0, 0, false, 9);
         /*************************  For Debug End ************************* */
 
         // insert and init to ListView
@@ -154,6 +166,11 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //            namesArr[i] = dbTouris.get(i).getName();
 //            Log.d("Coordinate", "Longitude: " + LongitudeArr[i].toString() + ", Latitude: " + LatitudeArr[i].toString());
 //        }
+
+        for (int i = 0; i < dbTouris.size(); i++) {
+            dbAR.setData(dbTouris.get(i).getName(), Float.parseFloat(dbTouris.get(i).getLatitude()), Float.parseFloat(dbTouris.get(i).getLongitude()), 0, 0, 0, false, 0);
+            Log.d("dbAR.getLatitude", String.valueOf(dbAR.getLatitude(i)));
+        }
 
         btnScreen.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -335,8 +352,6 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         }
     }
 
-    private final int AR_OBJECT_WIDTH = 400;
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();
@@ -382,7 +397,8 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             switch (myOri) {
                 case 0:
                 case 1:
-                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "北");
+                    if (DEBUG_MESSAGE == true)
+                        dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "北");
                     /*************************  For Debug Beg **************************/
                     for (int i = 0; i < dbAR.getSize(); i++) {
                         if ((dbAR.getQuadrant(i) == 1) || (dbAR.getQuadrant(i) == 7)) {
@@ -393,16 +409,22 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                         } else {
                             dbAR.setIsShown(i, false);
                         }
+
+                        if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
+                            break;
+                        }
                     }
                     /*************************  For Debug End **************************/
                     break;
                 case 2:
                 case 3:
-                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "東");
+                    if (DEBUG_MESSAGE == true)
+                        dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "東");
                     break;
                 case 4:
                 case 5:
-                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "南");
+                    if (DEBUG_MESSAGE == true)
+                        dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "南");
 //                    for (int i = 0; i < 10; i++) {
 //                        if (arOri[i] == 3) {
 //                            createNewObj(canvas, sampleXCoord[dispCount], sampleYCoord[dispCount], i);
@@ -423,12 +445,17 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                         } else {
                             dbAR.setIsShown(i, false);
                         }
+
+                        if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
+                            break;
+                        }
                     }
                     /*************************  For Debug End **************************/
                     break;
                 case 6:
                 case 7:
-                    dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "西");
+                    if (DEBUG_MESSAGE == true)
+                        dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "西");
                     /*************************  For Debug Beg **************************/
                     for (int i = 0; i < dbAR.getSize(); i++) {
                         if ((dbAR.getQuadrant(i) == 5) || (dbAR.getQuadrant(i) == 7)) {
@@ -438,6 +465,10 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                             dispCount++;
                         } else {
                             dbAR.setIsShown(i, false);
+                        }
+
+                        if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
+                            break;
                         }
                     }
                     /*************************  For Debug End **************************/
@@ -457,49 +488,10 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             float dist[] = new float[1];
 
             if (isLocatOK == 1) {
-//                for (int i = 0; i < 10; i++) {
-//                    azimuth = getAzimuthFromGPS(Double.parseDouble(LatitudeArr[i].toString()), Double.parseDouble(LongitudeArr[i].toString()), myLocat.getLatitude(), myLocat.getLongitude());
-//
-//                    if (azimuth > 140 && azimuth < 200) {
-//                        arOri[i] = 3;
-//                    } else if (azimuth > 180) {
-//                        arOri[i] = 5;
-//                    }
-//                }
                 /*************************  For Debug Beg ************************* */
-                //          N
-                //          0
-                //      7      1
-                // W 6           2  E
-                //      5      3
-                //          4
-                //          S
-                // Latitude:22.xxxxxx, Longitude:100.xxxxx
-                for (int i = 0; i < dbAR.getSize(); i++) {
-                    if (dbAR.getLatitude(i) > myLocat.getLatitude()) {
-                        if (dbAR.getLongitude(i) > myLocat.getLongitude()) {
-//                            Log.d("org", "east north");
-                            dbAR.setQuadrant(i, 1);
-                        } else {
-//                            Log.d("org", "west north");
-                            dbAR.setQuadrant(i, 7);
-                        }
-                    } else {
-                        if (dbAR.getLongitude(i) > myLocat.getLongitude()) {
-//                            Log.d("org", "east south");
-                            dbAR.setQuadrant(i, 3);
-                        } else {
-//                            Log.d("org", "west south");
-                            dbAR.setQuadrant(i, 5);
-                        }
-                    }
-
-                    Location.distanceBetween(myLocat.getLatitude(), myLocat.getLongitude(), dbAR.getLatitude(i), dbAR.getLongitude(i), dist);
-                    dbAR.setDistance(i, ((int) dist[0]));
-                }
+                dbAR.updateDB(myLocat);
                 /*************************  For Debug End ************************* */
             }
-
 
 //            StringBuilder msg = new StringBuilder(event.sensor.getName()).append(" ");
 //            for (float value : event.values) {
@@ -524,7 +516,8 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             /* get myself orientation */
             calculateOrientation();
 
-            this.invalidate(); //well be call OnDraw() always
+            /* well be call OnDraw() always */
+            this.invalidate();
         }
 
         @Override
@@ -593,7 +586,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         return b;
     }
 
-    public void calculateOrientation() {
+    private void calculateOrientation() {
         float[] values = new float[3];
         float[] R = new float[9];
         SensorManager.getRotationMatrix(R, null, accelerometerValues, magneticFieldValues);
@@ -632,14 +625,14 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         }
     }
 
-    public Bitmap screenShot(View view) {
+    private Bitmap screenShot(View view) {
         Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         view.draw(canvas);
         return bitmap;
     }
 
-    public static Bitmap getScreenShot(View view) {
+    private static Bitmap getScreenShot(View view) {
         View screenView = view.getRootView();
         screenView.setDrawingCacheEnabled(true);
         Bitmap bitmap = Bitmap.createBitmap(screenView.getDrawingCache());
