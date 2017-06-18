@@ -10,12 +10,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
@@ -23,7 +23,6 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -53,9 +52,10 @@ import com.google.android.gms.location.LocationServices;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 public class CamActivity extends AppCompatActivity implements LocationListener {
-    /********************
+    /*********************
      * DEFINE VARIABLE
      ********************/
     private final boolean DEBUG_MESSAGE = true;
@@ -71,7 +71,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     /******************** LOCAL VARIABLE ********************/
     private GoogleApiClient mGoogleApiClient;
     private LocationManager locationMgr;
-    private int isLocatOK = 0;
+    private boolean isLocatOK = false;
     private Size previewSize = null;
     private TextureView cameraText = null;
     private CameraDevice camDevice = null;
@@ -105,23 +105,27 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private int screenHeight;
     private int screenWidth;
     private ArChar dbAR = new ArChar();
-
+    private int dispCount = 0;
     /***********************************************************/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        /* Full screen */
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_cam);
 
         initView();
-        arNotFound = BitmapFactory.decodeResource(getResources(), R.drawable.locat_not_found);
-        arLocatMark = BitmapFactory.decodeResource(getResources(), R.drawable.ar_locat_mark);
-        cameraText.setSurfaceTextureListener(mSurfaceTextureListener);
 
-        OverlayView arContent = new OverlayView(getApplicationContext());
-        frameAR.addView(arContent);
+        /* Get Screen height and width */
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        screenHeight = displayMetrics.heightPixels;
+        screenWidth = displayMetrics.widthPixels;
+        dbAR.setWindowHeight(screenHeight);
+        dbAR.setWindowWidth(screenWidth);
 
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -137,8 +141,15 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                     android.Manifest.permission.CAMERA}, REQUEST_LOCATION);
         } else {
             getMyLocation();
-            isLocatOK = 1;
+            isLocatOK = true;
         }
+
+        arNotFound = BitmapFactory.decodeResource(getResources(), R.drawable.locat_not_found);
+        arLocatMark = BitmapFactory.decodeResource(getResources(), R.drawable.ar_locat_mark);
+        cameraText.setSurfaceTextureListener(mSurfaceTextureListener);
+
+//        OverlayView arContent = new OverlayView(getApplicationContext());
+//        frameAR.addView(arContent);
 
         // Load Raw file and covert to String
         data = useAPI.covRawToString(getResources().openRawResource(R.raw.data));
@@ -180,11 +191,12 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             }
         });
 
-        /* Get Screen height and width */
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        screenHeight = displayMetrics.heightPixels;
-        screenWidth = displayMetrics.widthPixels;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        cameraText.setSurfaceTextureListener(mSurfaceTextureListener);
     }
 
     @Override
@@ -195,7 +207,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             switch (requestCode) {
                 case REQUEST_LOCATION:
                     getMyLocation();
-                    isLocatOK = 1;
+                    isLocatOK = true;
                     openCamera();
                     break;
                 case REQUEST_SCREEN_SHOT:
@@ -208,19 +220,24 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-    }
-
     public void getMyLocation() {
+        Location bestLocation = null;
         locationMgr = (LocationManager) this.getSystemService(LOCATION_SERVICE);
 
-        String provider = this.locationMgr.getBestProvider(new Criteria(), true);
-        myLocat = locationMgr.getLastKnownLocation(provider);
-        //Toast.makeText(CamActivity.this, String.valueOf(location.getLatitude()) + ", "+ String.valueOf(location.getLongitude()), Toast.LENGTH_LONG).show();
-        Log.d("GPS", String.valueOf(myLocat.getLatitude()) + ", " + String.valueOf(myLocat.getLongitude()));
+        List<String> providers = locationMgr.getProviders(true);
+        for (String provider : providers) {
+            Location l = locationMgr.getLastKnownLocation(provider);
+            if (l == null) {
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
+            }
+        }
+        myLocat = bestLocation;
+
+//        Log.d("GPS", String.valueOf(myLocat.getLatitude()) + ", " + String.valueOf(myLocat.getLongitude()));
     }
 
     private void initView() {
@@ -255,6 +272,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {
 
         }
+
     };
 
     private void openCamera() {
@@ -273,7 +291,6 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                 camMgr.openCamera(camId, mCameraStateCallback, null);
             }
 
-
         } catch (Exception e) {
             Toast.makeText(this, "Open camera Error", Toast.LENGTH_LONG).show();
             //Error
@@ -286,6 +303,9 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         public void onOpened(CameraDevice camera) {
             camDevice = camera;
             startPreview();
+
+            OverlayView arContent = new OverlayView(getApplicationContext());
+            frameAR.addView(arContent);
         }
 
         @Override
@@ -313,8 +333,8 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 
             try {
                 cameraSeeion.setRepeatingRequest(capBuilder.build(), null, backHandler);
-            } catch (Exception e) {
-
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
             }
         }
 
@@ -329,19 +349,24 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         surfaceText.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
 
         Surface surface = new Surface(surfaceText);
+        if (surface.isValid()) {
+            try {
+                capBuilder = camDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+                //Error
+            }
 
-        try {
-            capBuilder = camDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-        } catch (Exception e) {
-            //Error
-        }
+            capBuilder.addTarget(surface);
 
-        capBuilder.addTarget(surface);
-
-        try {
-            camDevice.createCaptureSession(Arrays.asList(surface), mCameraCaptureSessionCallback, null);
-        } catch (Exception e) {
-            //Error
+            try {
+                camDevice.createCaptureSession(Arrays.asList(surface), mCameraCaptureSessionCallback, null);
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+                //Error
+            }
+        } else {
+            Toast.makeText(this, "!surface.isValid()", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -372,6 +397,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 
                 return true;
         }
+
         return super.onTouchEvent(event);
     }
 
@@ -392,7 +418,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
-            int dispCount = 0;
+            dispCount = 0;
 
             switch (myOri) {
                 case 0:
@@ -401,13 +427,21 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                         dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "北");
                     /*************************  For Debug Beg **************************/
                     for (int i = 0; i < dbAR.getSize(); i++) {
-                        if ((dbAR.getQuadrant(i) == 1) || (dbAR.getQuadrant(i) == 7)) {
-                            createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
-                            dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
-                            dbAR.setIsShown(i, true);
+//                        if ((dbAR.getQuadrant(i) == 1) || (dbAR.getQuadrant(i) == 7)) {
+//                            createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
+//                            dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
+//                            dbAR.setIsShown(i, true);
+//                            dispCount++;
+//                        } else {
+//                            dbAR.setIsShown(i, false);
+//                        }
+//
+//                        if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
+//                            break;
+//                        }
+                        if (dbAR.getDistance(i) <= 5000) {
+                            createNewObj(canvas, dbAR.getXCoord(i), dbAR.getYCoord(i), i);
                             dispCount++;
-                        } else {
-                            dbAR.setIsShown(i, false);
                         }
 
                         if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
@@ -436,20 +470,20 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //                        }
 //                    }
                     /*************************  For Debug Beg **************************/
-                    for (int i = 0; i < dbAR.getSize(); i++) {
-                        if ((dbAR.getQuadrant(i) == 5) || (dbAR.getQuadrant(i) == 3)) {
-                            createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
-                            dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
-                            dbAR.setIsShown(i, true);
-                            dispCount++;
-                        } else {
-                            dbAR.setIsShown(i, false);
-                        }
-
-                        if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
-                            break;
-                        }
-                    }
+//                    for (int i = 0; i < dbAR.getSize(); i++) {
+//                        if ((dbAR.getQuadrant(i) == 5) || (dbAR.getQuadrant(i) == 3)) {
+//                            createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
+//                            dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
+//                            dbAR.setIsShown(i, true);
+//                            dispCount++;
+//                        } else {
+//                            dbAR.setIsShown(i, false);
+//                        }
+//
+//                        if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
+//                            break;
+//                        }
+//                    }
                     /*************************  For Debug End **************************/
                     break;
                 case 6:
@@ -457,20 +491,20 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                     if (DEBUG_MESSAGE == true)
                         dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "西");
                     /*************************  For Debug Beg **************************/
-                    for (int i = 0; i < dbAR.getSize(); i++) {
-                        if ((dbAR.getQuadrant(i) == 5) || (dbAR.getQuadrant(i) == 7)) {
-                            createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
-                            dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
-                            dbAR.setIsShown(i, true);
-                            dispCount++;
-                        } else {
-                            dbAR.setIsShown(i, false);
-                        }
-
-                        if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
-                            break;
-                        }
-                    }
+//                    for (int i = 0; i < dbAR.getSize(); i++) {
+//                        if ((dbAR.getQuadrant(i) == 5) || (dbAR.getQuadrant(i) == 7)) {
+//                            createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
+//                            dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
+//                            dbAR.setIsShown(i, true);
+//                            dispCount++;
+//                        } else {
+//                            dbAR.setIsShown(i, false);
+//                        }
+//
+//                        if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
+//                            break;
+//                        }
+//                    }
                     /*************************  For Debug End **************************/
                     break;
                 default:
@@ -487,10 +521,10 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             double azimuth;
             float dist[] = new float[1];
 
-            if (isLocatOK == 1) {
-                /*************************  For Debug Beg ************************* */
-                dbAR.updateDB(myLocat);
-                /*************************  For Debug End ************************* */
+            if (isLocatOK == true) {
+                if (myLocat != null) {
+                    dbAR.updateDB(myLocat);
+                }
             }
 
 //            StringBuilder msg = new StringBuilder(event.sensor.getName()).append(" ");
@@ -524,6 +558,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
         }
+
     }
 
     public void createNewObj(Canvas canvas, float x, float y, int index) {
@@ -546,12 +581,21 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         areaRect = new Rect(((int) x), ((int) y), w, h);
         canvas.drawRect(areaRect, contentPaint);
 
-        RectF rectf = new RectF(areaRect);
-        rectf.left += (areaRect.width()) / 10.0f;
-        rectf.top += (areaRect.height()) / 4.0f;
+//        RectF rectf = new RectF(areaRect);
+//        rectf.left += (areaRect.width()) / 10.0f;
+//        rectf.top += (areaRect.height()) / 4.0f;
 
         contentPaint.setColor(Color.WHITE);
-        canvas.drawText(str, rectf.left, rectf.top - contentPaint.ascent(), contentPaint);
+        canvas.drawText(str, x, y + 60, contentPaint);
+
+        if (isLocatOK == true) {
+            if (myLocat != null) {
+                canvas.drawText("My location : " + myLocat.getLatitude() + ", " + myLocat.getLongitude(), 0, y + 150, contentPaint);
+            }
+        }
+
+        canvas.drawText("window : " + dbAR.getWindowWidth() + ", " + dbAR.getWindowHeight(), 0, y + 200, contentPaint);
+
     }
 
     public void showArNotFound(Canvas canvas, float x, float y, Bitmap bitmap) {

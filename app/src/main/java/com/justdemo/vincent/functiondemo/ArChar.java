@@ -18,6 +18,8 @@ public class ArChar {
     private final int WEST_NORTH = 7;
 
     private int arListSize;
+    private int windowHeight;
+    private int windowWidth;
     private ArrayList<ArInfo> dbArInfo = new ArrayList<>();
 
     public class ArInfo {
@@ -118,6 +120,22 @@ public class ArChar {
         dbArInfo.add(arInfo);
     }
 
+    public int getWindowWidth() {
+        return windowWidth;
+    }
+
+    public void setWindowWidth(int windowWidth) {
+        this.windowWidth = windowWidth;
+    }
+
+    public int getWindowHeight() {
+        return windowHeight;
+    }
+
+    public void setWindowHeight(int windowHeight) {
+        this.windowHeight = windowHeight;
+    }
+
     public int getSize() {
         return dbArInfo.size();
     }
@@ -177,15 +195,29 @@ public class ArChar {
         }
 
         calDirectionAndDistance(myLocat);
+        calCoord();
     }
 
     private void calCoord() {
-        float x, y;
+        float x = 0, y = 0, setX, setY;
+
+        setX = windowWidth / 10;
+        setY = windowHeight / 10;
 
         for (int i = 0; i < dbArInfo.size(); i++) {
+            if (dbArInfo.get(i).getDistance() >= 20000) {
+
+            } else if (dbArInfo.get(i).getDistance() >= 5000) {
+
+            } else {
+                x = setX * 2;
+                y = setY * 8;
+            }
+
             switch (dbArInfo.get(i).getArQuadrant()) {
                 case EAST_NORTH:
-
+                    dbArInfo.get(i).setxCoordinate(x);
+                    dbArInfo.get(i).setyCoordinate(y);
                     break;
             }
 //            dbArInfo.get(i).setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
@@ -193,13 +225,13 @@ public class ArChar {
     }
 
     /**
-     * N
-     * 0
-     * 7        1
-     * W  6                  2   E
-     * 5        3
-     * 4
-     * E
+     * //              N
+     * //              0
+     * //         7       1
+     * // W  6                  2   E
+     * //         5        3
+     * //              4
+     * //              E
      * Latitude:22.xxxxxx, Longitude:100.xxxxx
      *
      * @param myLocat
