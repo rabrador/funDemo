@@ -211,7 +211,7 @@ public class ArChar {
 
             } else {
                 x = setX * 2;
-                y = setY * 8;
+                y = setY * 6;
             }
 
             switch (dbArInfo.get(i).getArQuadrant()) {

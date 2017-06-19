@@ -65,6 +65,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
     private final int REQUEST_SCREEN_SHOT = 3;
     private final int AR_OBJECT_WIDTH = 400;
     private final int MAXIMUM_NUM_DISPLAY_AR = 2;
+    private final int MAXIMUM_DISTANCE = 5000; //meter
     private final int MINIMUM_DISTANCE_TO_SHOW = 5000;
     /***********************************************************/
 
@@ -208,7 +209,6 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                 case REQUEST_LOCATION:
                     getMyLocation();
                     isLocatOK = true;
-                    openCamera();
                     break;
                 case REQUEST_SCREEN_SHOT:
                     captureScreen(REQUEST_SCREEN_SHOT);
@@ -325,6 +325,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             closeAllCameraSession();
 
             cameraSeeion = session;
+
             capBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
 
             HandlerThread backThread = new HandlerThread("CameraPreview");
@@ -349,24 +350,21 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         surfaceText.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
 
         Surface surface = new Surface(surfaceText);
-        if (surface.isValid()) {
-            try {
-                capBuilder = camDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            } catch (CameraAccessException e) {
-                e.printStackTrace();
-                //Error
-            }
 
-            capBuilder.addTarget(surface);
+        try {
+            capBuilder = camDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+            //Error
+        }
 
-            try {
-                camDevice.createCaptureSession(Arrays.asList(surface), mCameraCaptureSessionCallback, null);
-            } catch (CameraAccessException e) {
-                e.printStackTrace();
-                //Error
-            }
-        } else {
-            Toast.makeText(this, "!surface.isValid()", Toast.LENGTH_LONG).show();
+        capBuilder.addTarget(surface);
+
+        try {
+            camDevice.createCaptureSession(Arrays.asList(surface), mCameraCaptureSessionCallback, null);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+            //Error
         }
     }
 
@@ -420,13 +418,31 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             super.onDraw(canvas);
             dispCount = 0;
 
-            switch (myOri) {
-                case 0:
-                case 1:
-                    if (DEBUG_MESSAGE == true)
-                        dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "北");
-                    /*************************  For Debug Beg **************************/
-                    for (int i = 0; i < dbAR.getSize(); i++) {
+            dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "debug mode");
+
+            for (int i = 0; i < dbAR.getSize(); i++) {
+                if (dbAR.getXCoord(i) == 0 || dbAR.getYCoord(i) == 0) {
+                    continue;
+                }
+
+                if (dbAR.getDistance(i) <= MAXIMUM_DISTANCE) {
+                    createNewObj(canvas, dbAR.getXCoord(i) + (dispCount * 200), dbAR.getYCoord(i), i);
+                    dispCount++;
+                }
+
+                if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
+                    break;
+                }
+            }
+
+            if (false) {
+                switch (myOri) {
+                    case 0:
+                    case 1:
+                        if (DEBUG_MESSAGE == true)
+                            dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "北");
+                        /*************************  For Debug Beg **************************/
+                        for (int i = 0; i < dbAR.getSize(); i++) {
 //                        if ((dbAR.getQuadrant(i) == 1) || (dbAR.getQuadrant(i) == 7)) {
 //                            createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
 //                            dbAR.setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));
@@ -439,26 +455,26 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //                        if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
 //                            break;
 //                        }
-                        if (dbAR.getDistance(i) <= 5000) {
-                            createNewObj(canvas, dbAR.getXCoord(i), dbAR.getYCoord(i), i);
-                            dispCount++;
-                        }
+                            if (dbAR.getDistance(i) <= 5000 && dbAR.getXCoord(i) != 0) {
+                                createNewObj(canvas, dbAR.getXCoord(i), dbAR.getYCoord(i), i);
+                                dispCount++;
+                            }
 
-                        if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
-                            break;
+                            if (dispCount > MAXIMUM_NUM_DISPLAY_AR) {
+                                break;
+                            }
                         }
-                    }
-                    /*************************  For Debug End **************************/
-                    break;
-                case 2:
-                case 3:
-                    if (DEBUG_MESSAGE == true)
-                        dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "東");
-                    break;
-                case 4:
-                case 5:
-                    if (DEBUG_MESSAGE == true)
-                        dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "南");
+                        /*************************  For Debug End **************************/
+                        break;
+                    case 2:
+                    case 3:
+                        if (DEBUG_MESSAGE == true)
+                            dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "東");
+                        break;
+                    case 4:
+                    case 5:
+                        if (DEBUG_MESSAGE == true)
+                            dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "南");
 //                    for (int i = 0; i < 10; i++) {
 //                        if (arOri[i] == 3) {
 //                            createNewObj(canvas, sampleXCoord[dispCount], sampleYCoord[dispCount], i);
@@ -469,7 +485,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //                            break;
 //                        }
 //                    }
-                    /*************************  For Debug Beg **************************/
+                        /*************************  For Debug Beg **************************/
 //                    for (int i = 0; i < dbAR.getSize(); i++) {
 //                        if ((dbAR.getQuadrant(i) == 5) || (dbAR.getQuadrant(i) == 3)) {
 //                            createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
@@ -484,13 +500,13 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //                            break;
 //                        }
 //                    }
-                    /*************************  For Debug End **************************/
-                    break;
-                case 6:
-                case 7:
-                    if (DEBUG_MESSAGE == true)
-                        dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "西");
-                    /*************************  For Debug Beg **************************/
+                        /*************************  For Debug End **************************/
+                        break;
+                    case 6:
+                    case 7:
+                        if (DEBUG_MESSAGE == true)
+                            dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "西");
+                        /*************************  For Debug Beg **************************/
 //                    for (int i = 0; i < dbAR.getSize(); i++) {
 //                        if ((dbAR.getQuadrant(i) == 5) || (dbAR.getQuadrant(i) == 7)) {
 //                            createNewObj(canvas, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]), i);
@@ -505,10 +521,11 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
 //                            break;
 //                        }
 //                    }
-                    /*************************  For Debug End **************************/
-                    break;
-                default:
-                    break;
+                        /*************************  For Debug End **************************/
+                        break;
+                    default:
+                        break;
+                }
             }
 
             if (dispCount == 0) {
