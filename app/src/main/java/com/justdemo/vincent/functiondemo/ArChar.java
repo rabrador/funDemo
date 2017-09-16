@@ -12,6 +12,9 @@ import java.util.ArrayList;
  */
 
 public class ArChar {
+    /*********************
+     * DEFINE VARIABLE
+     ********************/
     private final int EAST_NORTH = 1;
     private final int EAST_SOUTH = 3;
     private final int WEST_SOUTH = 5;
@@ -20,6 +23,9 @@ public class ArChar {
     private int arListSize;
     private int windowHeight;
     private int windowWidth;
+    private int LEVEL_1_SHIFT = 20000;
+    private int LEVEL_2_SHIFT = 5000;
+
     private ArrayList<ArInfo> dbArInfo = new ArrayList<>();
 
     public class ArInfo {
@@ -205,9 +211,9 @@ public class ArChar {
         setY = windowHeight / 10;
 
         for (int i = 0; i < dbArInfo.size(); i++) {
-            if (dbArInfo.get(i).getDistance() >= 20000) {
+            if (dbArInfo.get(i).getDistance() >= LEVEL_1_SHIFT) {
 
-            } else if (dbArInfo.get(i).getDistance() >= 5000) {
+            } else if (dbArInfo.get(i).getDistance() >= LEVEL_2_SHIFT) {
 
             } else {
                 x = setX * 2;
@@ -218,6 +224,12 @@ public class ArChar {
                 case EAST_NORTH:
                     dbArInfo.get(i).setxCoordinate(x);
                     dbArInfo.get(i).setyCoordinate(y);
+                    break;
+                case EAST_SOUTH:
+                    break;
+                case WEST_SOUTH:
+                    break;
+                case WEST_NORTH:
                     break;
             }
 //            dbArInfo.get(i).setXYcoord(i, ((float) sampleXCoord[dispCount]), ((float) sampleYCoord[dispCount]));

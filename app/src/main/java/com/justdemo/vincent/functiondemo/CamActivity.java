@@ -158,31 +158,17 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
         // Parser json data
         dbTouris = useAPI.parserJsonFromTouris(data);
 
+        // insert and init to ListView
         /*************************  For Debug Beg ************************* */
-//        dbAR.setData("新竹關東橋郵局", ((float) 24.782646), ((float) 121.018707), 0, 0, 0, false, 0);
-//        dbAR.setData("竹北火車站", ((float) 24.839656), ((float) 121.009613), 0, 0, 0, false, 0);
-//        dbAR.setData("十八尖山停車場", ((float) 24.795013), ((float) 120.986764), 0, 0, 0, false, 9);
+        dbAR.setData("新竹關東橋郵局", ((float) 24.782646), ((float) 121.018707), 0, 0, 0, false, 0);
+        dbAR.setData("竹北火車站", ((float) 24.839656), ((float) 121.009613), 0, 0, 0, false, 0);
+        dbAR.setData("十八尖山停車場", ((float) 24.795013), ((float) 120.986764), 0, 0, 0, false, 9);
         /*************************  For Debug End ************************* */
 
-        // insert and init to ListView
-//        LongitudeArr = new String[dbTouris.size()];
-//        LatitudeArr = new String[dbTouris.size()];
-//        namesArr = new String[dbTouris.size()];
-//        xCoordinate = new double[dbTouris.size()];
-//        yCoordinate = new double[dbTouris.size()];
-//        arOri = new int[dbTouris.size()];
-//
 //        for (int i = 0; i < dbTouris.size(); i++) {
-//            LongitudeArr[i] = dbTouris.get(i).getLongitude();
-//            LatitudeArr[i] = dbTouris.get(i).getLatitude();
-//            namesArr[i] = dbTouris.get(i).getName();
-//            Log.d("Coordinate", "Longitude: " + LongitudeArr[i].toString() + ", Latitude: " + LatitudeArr[i].toString());
+//            dbAR.setData(dbTouris.get(i).getName(), Float.parseFloat(dbTouris.get(i).getLatitude()), Float.parseFloat(dbTouris.get(i).getLongitude()), 0, 0, 0, false, 0);
+//            //Log.d("dbAR.getLatitude", String.valueOf(dbAR.getLatitude(i)));
 //        }
-
-        for (int i = 0; i < dbTouris.size(); i++) {
-            dbAR.setData(dbTouris.get(i).getName(), Float.parseFloat(dbTouris.get(i).getLatitude()), Float.parseFloat(dbTouris.get(i).getLongitude()), 0, 0, 0, false, 0);
-            Log.d("dbAR.getLatitude", String.valueOf(dbAR.getLatitude(i)));
-        }
 
         btnScreen.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -418,7 +404,9 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
             super.onDraw(canvas);
             dispCount = 0;
 
-            dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "debug mode");
+            if (DEBUG_MESSAGE == true) {
+                dbgCreateArObj(canvas, ((float) (screenWidth * 0.35)), ((float) (screenHeight * 0.85)), "debug mode");
+            }
 
             for (int i = 0; i < dbAR.getSize(); i++) {
                 if (dbAR.getXCoord(i) == 0 || dbAR.getYCoord(i) == 0) {
@@ -435,6 +423,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                 }
             }
 
+            /* Old implement, you can ignore that. */
             if (false) {
                 switch (myOri) {
                     case 0:
@@ -528,6 +517,7 @@ public class CamActivity extends AppCompatActivity implements LocationListener {
                 }
             }
 
+            /* No AR object need to display. */
             if (dispCount == 0) {
                 showArNotFound(canvas, ((float) (screenWidth * 0.35)), (((float) (screenHeight * 0.6))), arNotFound);
             }
