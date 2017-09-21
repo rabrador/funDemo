@@ -32,7 +32,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ListActivity" />
+        <activity
+            android:name=".ListActivity"
+            android:theme="@style/mytitle" />
         <activity android:name=".MapsActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -53,7 +55,8 @@
             android:name=".CamActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
-        <activity android:name=".ContentActivity"></activity>
+        <activity android:name=".ContentActivity" />
+        <activity android:name=".ClassifyActivity"></activity>
     </application>
 
 </manifest>

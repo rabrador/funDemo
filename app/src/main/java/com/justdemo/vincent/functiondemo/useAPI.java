@@ -44,7 +44,7 @@ public class useAPI {
                 JSONObject subObj = array.getJSONObject(i);
 
                 Touris touris = new Touris(subObj.getString("Name"), subObj.getString("Title"), subObj.getString("Introduction"),
-                        subObj.getString("Elong"), subObj.getString("Nlat"));
+                        subObj.getString("Elong"), subObj.getString("Nlat"), 0);
                 list.add(touris);
             }
         } catch (Exception e) {

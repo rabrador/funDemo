@@ -5,19 +5,21 @@ package com.justdemo.vincent.functiondemo;
  */
 
 public class Touris {
-    String Data;
-    String Name;
-    String Title;
-    String Introduction;
-    String Longitude;
-    String Latitude;
+    private String Data;
+    private String Name;
+    private String Title;
+    private String Introduction;
+    private String Longitude;
+    private String Latitude;
+    private int Classification;
 
-    public Touris(String name, String title, String introduction, String longitude, String latitude) {
+    public Touris(String name, String title, String introduction, String longitude, String latitude, int classification) {
         Name = name;
         Title = title;
         Introduction = introduction;
         Longitude = longitude;
         Latitude = latitude;
+        Classification = classification;
     }
 
     public String getData() {
@@ -28,8 +30,17 @@ public class Touris {
         Data = data;
     }
 
+    public int getClassification() {
+        return Classification;
+    }
+
+    public void setClassification(int classification) {
+        Classification = classification;
+    }
+
     public String getName() {
         return Name;
+
     }
 
     public void setName(String name) {
