@@ -28,6 +28,7 @@ import java.util.List;
 
 public class ListActivity extends AppCompatActivity {
     ArrayList<Touris> dbTourism = new ArrayList<>();
+    ArrayList<Touris> displayTourism = new ArrayList<>();
     private String data;
     private ListView mList;
     private ImageView ivCircle;
@@ -67,9 +68,10 @@ public class ListActivity extends AppCompatActivity {
 
         // insert to ListView
         String[] namesArr = new String[dbTourism.size()];
+        displayTourism = Touris.copyList(dbTourism, dbTourism.size());
 
         for (int i = 0; i < dbTourism.size(); i++) {
-            namesArr[i] = dbTourism.get(i).getName();
+            namesArr[i] = displayTourism.get(i).getName();
         }
 
         mList.setAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, namesArr));
@@ -83,7 +85,7 @@ public class ListActivity extends AppCompatActivity {
                 new AlertDialog.Builder(ListActivity.this)
                         .setView(view_layout)
                         .setTitle("介紹")
-                        .setMessage(dbTourism.get(position).getIntroduction())
+                        .setMessage(displayTourism.get(position).getIntroduction())
                         .setPositiveButton("確定", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -124,10 +126,12 @@ public class ListActivity extends AppCompatActivity {
 
     private void updateListViewDisplay(int key) {
         int count = 0, newIndex = 0;
+        ArrayList<Touris> tempList = new ArrayList<>();
 
         /* 1. calculate the db count after filter */
         for (int i=0; i<dbTourism.size();i++) {
             if (dbTourism.get(i).getClassification() == key) {
+                Touris.createEmptyEntry(tempList);
                 count++;
             }
         }
@@ -138,11 +142,16 @@ public class ListActivity extends AppCompatActivity {
         /* 3. reassign display string and index */
         for (int i=0; i<dbTourism.size();i++) {
             if (dbTourism.get(i).getClassification() == key) {
+                tempList.get(newIndex).setName(dbTourism.get(i).getName());
+                tempList.get(newIndex).setIntroduction(dbTourism.get(i).getIntroduction());
                 newNameArr[newIndex] = dbTourism.get(i).getName();
+//                Toast.makeText(ListActivity.this,tempList.get(newIndex).getIntroduction() + "", Toast.LENGTH_SHORT).show();
                 newIndex++;
-//                Toast.makeText(ListActivity.this, i + "", Toast.LENGTH_SHORT).show();
             }
         }
+
+        displayTourism.clear();
+        displayTourism = Touris.copyList(tempList, tempList.size());
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(ListActivity.this,
                 android.R.layout.simple_list_item_1, newNameArr) {
