@@ -1,5 +1,7 @@
 package com.justdemo.vincent.functiondemo;
 
+import java.util.ArrayList;
+
 /**
  * Created by Vincent on 2017/5/4.
  */
@@ -78,4 +80,22 @@ public class Touris {
     public void setIntroduction(String introduction) {
         Introduction = introduction;
     }
+
+    public static ArrayList<Touris> copyList(ArrayList<Touris> source, int count) {
+        ArrayList<Touris> list = new ArrayList<>();
+
+        for(int i=0; i<count; i++) {
+            Touris touris = new Touris(source.get(i).getName(), source.get(i).getTitle(), source.get(i).getIntroduction(),
+                    "0", "0", 0);
+            list.add(touris);
+        }
+
+        return list;
+    }
+
+    public static void createEmptyEntry(ArrayList<Touris> source) {
+        Touris touris = new Touris("", "", "", "0", "0", 0);
+        source.add(touris);
+    }
 }
+
